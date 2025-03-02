@@ -137,17 +137,17 @@ class Fornecedor {
             `;
                 const response = yield (0, db_1.query)(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco, this.id_fornecedor]);
                 if (response) {
-                    this.tx_razao_social = tx_razao_social,
-                        this.tx_cpf_cnpj = tx_cpf_cnpj,
-                        this.tx_email = tx_email,
-                        this.tx_telefone = tx_telefone,
-                        this.vr_frete = vr_frete,
-                        this.nu_dias_previsao_inicial_entrega = nu_dias_previsao_inicial_entrega,
-                        this.nu_dias_previsao_final_entrega = nu_dias_previsao_final_entrega,
-                        this.tx_pais = tx_pais,
-                        this.tx_uf = tx_uf,
-                        this.tx_cidade = tx_cidade,
-                        this.tx_endereco = tx_endereco;
+                    this.tx_razao_social = tx_razao_social;
+                    this.tx_cpf_cnpj = tx_cpf_cnpj;
+                    this.tx_email = tx_email;
+                    this.tx_telefone = tx_telefone;
+                    this.vr_frete = vr_frete;
+                    this.nu_dias_previsao_inicial_entrega = nu_dias_previsao_inicial_entrega;
+                    this.nu_dias_previsao_final_entrega = nu_dias_previsao_final_entrega;
+                    this.tx_pais = tx_pais;
+                    this.tx_uf = tx_uf;
+                    this.tx_cidade = tx_cidade;
+                    this.tx_endereco = tx_endereco;
                     return {
                         result: 'success',
                         message: 'Fornecedor atualizado com sucesso'

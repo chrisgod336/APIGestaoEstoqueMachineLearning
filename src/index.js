@@ -9,6 +9,11 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const UsuarioRoutes_1 = __importDefault(require("./routes/UsuarioRoutes/UsuarioRoutes"));
 const FornecedorRoutes_1 = __importDefault(require("./routes/FornecedorRoutes/FornecedorRoutes"));
+const ClienteRoutes_1 = __importDefault(require("./routes/ClienteRoutes/ClienteRoutes"));
+const ProdutoRoutes_1 = __importDefault(require("./routes/ProdutoRoutes/ProdutoRoutes"));
+const LocalEstoqueRoutes_1 = __importDefault(require("./routes/EstoqueRoutes/LocalEstoqueRoutes"));
+const EstoqueRoutes_1 = __importDefault(require("./routes/EstoqueRoutes/EstoqueRoutes"));
+const VendaRoutes_1 = __importDefault(require("./routes/VendaRoutes/VendaRoutes"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // Middlewares
@@ -21,6 +26,11 @@ app.get("/", (req, res) => {
 //Rotas
 app.use("/usuario", UsuarioRoutes_1.default);
 app.use("/fornecedor", FornecedorRoutes_1.default);
+app.use("/cliente", ClienteRoutes_1.default);
+app.use("/produto", ProdutoRoutes_1.default);
+app.use("/localEstoque", LocalEstoqueRoutes_1.default);
+app.use("/estoque", EstoqueRoutes_1.default);
+app.use("/venda", VendaRoutes_1.default);
 // Iniciando o servidor
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);

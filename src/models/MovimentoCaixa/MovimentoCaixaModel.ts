@@ -1,3 +1,4 @@
+import { query } from "../../services/db";
 class MovimentoCaixa {
     private id_movimento_caixa: number;
     private id_venda: number;
@@ -52,4 +53,61 @@ class MovimentoCaixa {
     public getTxTipoMovimento(): string {
         return this.tx_tipo_movimento;
     }
+
+    public static async criarMovimentoCaixa(tx_descricao:string, vr_movimento:number, tx_tipo_movimento:string, id_venda?:number, id_compra?:number, dt_movimento?:string): Promise<object> {
+        try {
+
+            dt_movimento = dt_movimento?dt_movimento:'NOW()';
+            id_venda = id_venda?id_venda:0;
+            id_compra = id_compra?id_compra:0;
+
+            const sql_insert = `
+                INSERT INTO tb_movimento_caixa(tx_descricao, vr_movimento, tx_tipo_movimento, dt_movimento, id_venda, id_compra)
+                VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_movimento_caixa
+            `;
+
+            const response:any = await query(sql_insert, [tx_descricao, vr_movimento, tx_tipo_movimento, dt_movimento, id_venda, id_compra]);
+
+            if (response?.length > 0) {
+
+                return {
+                    result: 'success',
+                    message: 'Movimentação de caixa realizada com sucesso',
+                    data: new MovimentoCaixa(response[0].id_movimento_caixa, response[0].tx_descricao, response[0].vr_movimento, response[0].tx_tipo_movimento, response[0].dt_movimento, response[0].id_venda, response[0].id_compra)
+                };
+            } else {
+                throw new Error('Erro ao tentar inserir movimentação.');
+            }
+        } catch (error: any) {
+            return {
+                result: 'error',
+                message: error?.message ?? 'Erro ao tentar criar movimentação.'
+            };
+        }
+    }
+
+    public static async deletarMovimentoCaixa(id_venda?:number, id_compra?:number): Promise<object> {
+        try {
+            const sql_delete = id_venda? 
+            `DELETE FROM tb_movimento_caixa WHERE id_venda = $1`: 
+            `DELETE FROM tb_movimento_caixa WHERE id_compra = $1`;
+            const response:any = await query(sql_delete, [id_venda?id_venda:id_compra]);
+
+            if(response){
+                return {
+                    result: 'success',
+                    message: 'Movimentação deletada com sucesso'
+                };
+            }else{
+                throw new Error('Erro ao tentar deletar movimentação.');
+            }
+        } catch (error: any) {
+            return {
+                result: 'error',
+                message: error?.message ?? 'Erro ao tentar deletar movimentação.'
+            };
+        }
+    }
 }
+
+export default MovimentoCaixa;

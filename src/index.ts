@@ -5,6 +5,11 @@ dotenv.config();
 
 import UsuarioRoutes from './routes/UsuarioRoutes/UsuarioRoutes';
 import FornecedorRoutes from './routes/FornecedorRoutes/FornecedorRoutes';
+import ClienteRoutes from './routes/ClienteRoutes/ClienteRoutes';
+import ProdutoRoutes from './routes/ProdutoRoutes/ProdutoRoutes';
+import LocalEstoqueRoutes from './routes/EstoqueRoutes/LocalEstoqueRoutes';
+import EstoqueRoutes from './routes/EstoqueRoutes/EstoqueRoutes';
+import VendaRoutes from './routes/VendaRoutes/VendaRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +26,11 @@ app.get("/", (req, res) => {
 //Rotas
 app.use("/usuario", UsuarioRoutes);
 app.use("/fornecedor", FornecedorRoutes);
+app.use("/cliente", ClienteRoutes);
+app.use("/produto", ProdutoRoutes);
+app.use("/localEstoque", LocalEstoqueRoutes);
+app.use("/estoque", EstoqueRoutes);
+app.use("/venda", VendaRoutes);
 
 // Iniciando o servidor
 app.listen(PORT, () => {
