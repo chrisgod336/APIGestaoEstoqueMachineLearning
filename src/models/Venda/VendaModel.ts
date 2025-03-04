@@ -213,13 +213,13 @@ class Venda {
                 }
                 
             }else{
-                throw new Error('Erro ao tentar baixar venda.');
+                throw new Error('Erro ao tentar extornar venda.');
             }
 
         }catch (error: any) {
             return {
                 result: 'error',
-                message: error?.message ?? 'Erro ao baixar a vendas.'
+                message: error?.message ?? 'Erro ao extornar a venda.'
             };
         }
     }

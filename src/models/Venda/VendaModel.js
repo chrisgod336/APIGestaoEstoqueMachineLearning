@@ -201,13 +201,13 @@ class Venda {
                     }
                 }
                 else {
-                    throw new Error('Erro ao tentar baixar venda.');
+                    throw new Error('Erro ao tentar extornar venda.');
                 }
             }
             catch (error) {
                 return {
                     result: 'error',
-                    message: (_b = error === null || error === void 0 ? void 0 : error.message) !== null && _b !== void 0 ? _b : 'Erro ao baixar a vendas.'
+                    message: (_b = error === null || error === void 0 ? void 0 : error.message) !== null && _b !== void 0 ? _b : 'Erro ao extornar a venda.'
                 };
             }
         });

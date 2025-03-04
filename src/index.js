@@ -14,6 +14,9 @@ const ProdutoRoutes_1 = __importDefault(require("./routes/ProdutoRoutes/ProdutoR
 const LocalEstoqueRoutes_1 = __importDefault(require("./routes/EstoqueRoutes/LocalEstoqueRoutes"));
 const EstoqueRoutes_1 = __importDefault(require("./routes/EstoqueRoutes/EstoqueRoutes"));
 const VendaRoutes_1 = __importDefault(require("./routes/VendaRoutes/VendaRoutes"));
+const VendaProdutoRoutes_1 = __importDefault(require("./routes/VendaRoutes/VendaProdutoRoutes"));
+const CompraRoutes_1 = __importDefault(require("./routes/CompraRoutes/CompraRoutes"));
+const CompraProdutoRoutes_1 = __importDefault(require("./routes/CompraRoutes/CompraProdutoRoutes"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // Middlewares
@@ -31,6 +34,9 @@ app.use("/produto", ProdutoRoutes_1.default);
 app.use("/localEstoque", LocalEstoqueRoutes_1.default);
 app.use("/estoque", EstoqueRoutes_1.default);
 app.use("/venda", VendaRoutes_1.default);
+app.use("/vendaProduto", VendaProdutoRoutes_1.default);
+app.use("/compra", CompraRoutes_1.default);
+app.use("/compraProdutos", CompraProdutoRoutes_1.default);
 // Iniciando o servidor
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);

@@ -1,0 +1,16 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const CompraController_1 = __importDefault(require("../../controllers/CompraController/CompraController"));
+const router = express_1.default.Router();
+const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.post("/criar", asyncHandler(CompraController_1.default.criar));
+router.get("/buscar", asyncHandler(CompraController_1.default.buscar));
+router.put("/atualizar", asyncHandler(CompraController_1.default.atualizar));
+router.delete("/deletar", asyncHandler(CompraController_1.default.deletar));
+router.post("/baixar", asyncHandler(CompraController_1.default.baixar));
+router.post("/extornar", asyncHandler(CompraController_1.default.extornar));
+exports.default = router;

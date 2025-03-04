@@ -17,8 +17,8 @@ class VendaProdutoController {
     static criar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total } = req.body;
-                const resultado = yield VendaProdutoModel_1.default.criarVendaProduto(id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total);
+                const { id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade } = req.body;
+                const resultado = yield VendaProdutoModel_1.default.criarVendaProduto(id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade);
                 res.status(201).json(resultado);
             }
             catch (error) {
@@ -42,9 +42,9 @@ class VendaProdutoController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { id_venda_produto } = req.params;
-                const { id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total } = req.body;
-                const vendaProduto = new VendaProdutoModel_1.default(Number(id_venda_produto), 0, 0, 0, 0); // Apenas ID é necessário para update
-                const resultado = yield vendaProduto.atualizarVendaProduto(id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total);
+                const { id_local_estoque, id_estoque, id_produto, nu_quantidade } = req.body;
+                const vendaProduto = new VendaProdutoModel_1.default(Number(id_venda_produto), 0, 0, 0, 0);
+                const resultado = yield vendaProduto.atualizarVendaProduto(id_local_estoque, id_estoque, id_produto, nu_quantidade);
                 res.status(200).json(resultado);
             }
             catch (error) {

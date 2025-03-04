@@ -1,0 +1,49 @@
+import { Request, Response } from "express";
+import Compra from "../../models/Compra/CompraModel";
+
+class CompraController {
+
+    static async criar (req:Request, res:Response) {
+        const { id_fornecedor, id_local_estoque, dt_compra } = req.body;
+        const result:any = await Compra.criarCompra(id_fornecedor, id_local_estoque, dt_compra);
+        res.status(result.result === 'success' ? 201 : 400).json(result);
+    };
+
+    static async buscar (req:Request, res:Response) {
+        const { id_compra } = req.params;
+        const result:any = await Compra.buscarCompra(id_compra ? Number(id_compra) : undefined);
+        res.status(result.result === 'success' ? 200 : 404).json(result);
+    };
+
+    static async atualizar (req:Request, res:Response) {
+        const { id_compra } = req.params;
+        const { id_fornecedor, id_local_estoque, dt_compra, vr_frete } = req.body;
+        const compra = new Compra(Number(id_compra), id_fornecedor, id_local_estoque);
+        const result:any = await compra.atualizarCompra(id_fornecedor, id_local_estoque, dt_compra, vr_frete);
+        res.status(result.result === 'success' ? 200 : 400).json(result);
+    };
+
+    static async deletar (req:Request, res:Response) {
+        const { id_compra } = req.params;
+        const compra = new Compra(Number(id_compra), 0, 0);
+        const result:any = await compra.deletarCompra();
+        res.status(result.result === 'success' ? 200 : 400).json(result);
+    };
+
+    static async baixar (req:Request, res:Response) {
+        const { id_compra } = req.params;
+        const { dt_entrega } = req.body;
+        const compra = new Compra(Number(id_compra), 0, 0);
+        const result:any = await compra.baixarCompra(dt_entrega);
+        res.status(result.result === 'success' ? 200 : 400).json(result);
+    };
+
+    static async extornar (req:Request, res:Response) {
+        const { id_compra } = req.params;
+        const compra = new Compra(Number(id_compra), 0, 0);
+        const result:any = await compra.extornarCompra();
+        res.status(result.result === 'success' ? 200 : 400).json(result);
+    };
+}
+
+export default CompraController;
