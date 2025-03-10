@@ -13,6 +13,7 @@ import VendaRoutes from './routes/VendaRoutes/VendaRoutes';
 import VendaProdutoRoutes from './routes/VendaRoutes/VendaProdutoRoutes';
 import CompraRoutes from './routes/CompraRoutes/CompraRoutes';
 import CompraProdutoRoutes from './routes/CompraRoutes/CompraProdutoRoutes';
+import MovimentoCaixaRoutes from './routes/MovimentoCaixaRoutes/MovimentoCaixaRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,6 +38,7 @@ app.use("/venda", VendaRoutes);
 app.use("/vendaProduto", VendaProdutoRoutes);
 app.use("/compra", CompraRoutes);
 app.use("/compraProdutos", CompraProdutoRoutes);
+app.use("/movimentoCaixa", MovimentoCaixaRoutes);
 
 // Iniciando o servidor
 app.listen(PORT, () => {

@@ -41,6 +41,34 @@ class MovimentoCaixa {
     getTxTipoMovimento() {
         return this.tx_tipo_movimento;
     }
+    static buscaMovimentoCaixa() {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const sql_search = `
+        SELECT *
+            FROM tb_movimento_caixa
+            ORDER BY id_movimento_caixa DESC`;
+                const response = yield (0, db_1.query)(sql_search);
+                if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
+                    return {
+                        result: 'success',
+                        message: 'Movimentações encontradas com sucesso',
+                        data: response
+                    };
+                }
+                else {
+                    throw new Error('Erro ao tentar buscar movimentações.');
+                }
+            }
+            catch (error) {
+                return {
+                    result: 'error',
+                    message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : 'Erro ao tentar buscar movimentações.'
+                };
+            }
+        });
+    }
     static criarMovimentoCaixa(tx_descricao, vr_movimento, tx_tipo_movimento, id_venda, id_compra, dt_movimento) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
