@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../../services/db");
+const db_1 = __importDefault(require("../../services/db"));
 const MovimentoCaixaModel_1 = __importDefault(require("../MovimentoCaixa/MovimentoCaixaModel"));
 class Compra {
     constructor(id_compra, id_fornecedor, id_local_estoque, dt_compra, tx_status, dt_previsao_entrega_inicial, dt_previsao_entrega_final, vr_total_compra, vr_compra, vr_frete, dt_entrega) {
@@ -67,7 +67,7 @@ class Compra {
             try {
                 const sql_search = `SELECT nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega FROM tb_fornecedores WHERE id_fornecedor = $1`;
                 const values = [id_fornecedor];
-                const response = yield (0, db_1.query)(sql_search, values);
+                const response = yield db_1.default.query(sql_search, values);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     const dias_inc = response[0].nu_dias_previsao_inicial_entrega;
                     const dias_fim = response[0].nu_dias_previsao_final_entrega;
@@ -117,7 +117,7 @@ class Compra {
                 INSERT INTO tb_compra(id_fornecedor, id_local_estoque, dt_compra, tx_status, dt_previsao_entrega_inicial, dt_previsao_entrega_final)
                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_compra
             `;
-                const response = yield (0, db_1.query)(sql_insert, [id_fornecedor, id_local_estoque, dt_compra, 'PENDENTE', previsao_inicial, previsao_final]);
+                const response = yield db_1.default.query(sql_insert, [id_fornecedor, id_local_estoque, dt_compra, 'PENDENTE', previsao_inicial, previsao_final]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -144,7 +144,7 @@ class Compra {
                 const sql_search = id_compra
                     ? `SELECT * FROM tb_compra WHERE id_compra = $1`
                     : `SELECT * FROM tb_compra ORDER BY id_compra`;
-                const response = yield (0, db_1.query)(sql_search, id_compra ? [id_compra] : []);
+                const response = yield db_1.default.query(sql_search, id_compra ? [id_compra] : []);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -185,7 +185,7 @@ class Compra {
                     dt_previsao_entrega_final = $7
                     WHERE id_compra = $8;
             `;
-                const response = yield (0, db_1.query)(sql_update, [id_fornecedor, id_local_estoque, dt_compra, vr_total_compra, vr_frete, previsao_inicial, previsao_final, this.id_compra]);
+                const response = yield db_1.default.query(sql_update, [id_fornecedor, id_local_estoque, dt_compra, vr_total_compra, vr_frete, previsao_inicial, previsao_final, this.id_compra]);
                 if (response) {
                     this.id_fornecedor = id_fornecedor;
                     this.id_local_estoque = id_local_estoque;
@@ -216,7 +216,7 @@ class Compra {
             var _a;
             try {
                 const sql_delete = `DELETE FROM tb_compra WHERE id_compra = $1`;
-                const response = yield (0, db_1.query)(sql_delete, [this.id_compra]);
+                const response = yield db_1.default.query(sql_delete, [this.id_compra]);
                 if (response) {
                     return {
                         result: 'success',
@@ -240,7 +240,7 @@ class Compra {
             var _a, _b;
             try {
                 const sql_update = `UPDATE tb_compra SET dt_entrega = $1, tx_status  = 'BAIXADA' WHERE id_compra = $2`;
-                const response = yield (0, db_1.query)(sql_update, [dt_entrega, this.id_compra]);
+                const response = yield db_1.default.query(sql_update, [dt_entrega, this.id_compra]);
                 if (response) {
                     const movimentacao = yield MovimentoCaixaModel_1.default.criarMovimentoCaixa(`Movimentação referente a compra: ${this.id_compra}`, this.vr_total_compra, 'COMPRA', 0, this.id_compra);
                     if ((movimentacao === null || movimentacao === void 0 ? void 0 : movimentacao.result) === 'success') {
@@ -272,7 +272,7 @@ class Compra {
             var _a, _b;
             try {
                 const sql_update = `UPDATE tb_compra SET dt_entrega = NULL, tx_status  = 'ABERTA' WHERE id_compra = $1`;
-                const response = yield (0, db_1.query)(sql_update, [this.id_compra]);
+                const response = yield db_1.default.query(sql_update, [this.id_compra]);
                 if (response) {
                     const movimentacao = yield MovimentoCaixaModel_1.default.deletarMovimentoCaixa(0, this.id_compra);
                     if ((movimentacao === null || movimentacao === void 0 ? void 0 : movimentacao.result) === 'success') {

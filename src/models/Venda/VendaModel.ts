@@ -1,4 +1,4 @@
-import { query } from "../../services/db";
+import pool from "../../services/db";
 import MovimentoCaixa from "../MovimentoCaixa/MovimentoCaixaModel";
 
 class Venda {
@@ -52,7 +52,7 @@ class Venda {
                 VALUES ($1, $2) RETURNING id_venda
             `;
 
-            const response:any = await query(sql_insert, [id_cliente, dt_venda]);
+            const response:any = await pool.query(sql_insert, [id_cliente, dt_venda]);
 
             if (response?.length > 0) {
 
@@ -77,7 +77,7 @@ class Venda {
             const sql_search = id_venda
                 ? `SELECT * FROM tb_venda WHERE id_venda = $1`
                 : `SELECT * FROM tb_venda ORDER BY id_venda`;
-            const response:any = await query(sql_search, id_venda ? [id_venda] : []);
+            const response:any = await pool.query(sql_search, id_venda ? [id_venda] : []);
 
             if(response?.length > 0){
                 return {
@@ -106,7 +106,7 @@ class Venda {
                     WHERE id_venda = $4;
             `;
 
-            const response:any = await query(sql_update, [id_cliente, dt_venda, vr_venda, this.id_venda]);
+            const response:any = await pool.query(sql_update, [id_cliente, dt_venda, vr_venda, this.id_venda]);
 
             if(response){
                 this.id_cliente = id_cliente;
@@ -132,7 +132,7 @@ class Venda {
     public async deletarVenda(): Promise<object> {
         try {
             const sql_delete = `DELETE FROM tb_venda WHERE id_venda = $1`;
-            const response:any = await query(sql_delete, [this.id_venda]);
+            const response:any = await pool.query(sql_delete, [this.id_venda]);
 
             if(response){
                 return {
@@ -154,7 +154,7 @@ class Venda {
         try {
 
             const sql_update = `UPDATE tb_venda SET status  = 'BAIXADA' WHERE id_venda = $1`;
-            const response:any = await query(sql_update, [this.id_venda]);
+            const response:any = await pool.query(sql_update, [this.id_venda]);
 
             if(response){
 
@@ -194,7 +194,7 @@ class Venda {
         try {
 
             const sql_update = `UPDATE tb_venda SET status  = 'ABERTA' WHERE id_venda = $1`;
-            const response:any = await query(sql_update, [this.id_venda]);
+            const response:any = await pool.query(sql_update, [this.id_venda]);
 
             if(response){
 

@@ -1,4 +1,4 @@
-import { query } from "../../services/db";
+import pool from "../../services/db";
 class Produto {
     private id_produto: number;
     private id_fornecedor: number;
@@ -54,7 +54,7 @@ class Produto {
                 VALUES ($1, $2, $3, $4, $5) RETURNING id_produto
             `;
 
-            const response:any = await query(sql_insert, [id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda]);
+            const response:any = await pool.query(sql_insert, [id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda]);
 
             if (response?.length > 0) {
 
@@ -79,7 +79,7 @@ class Produto {
             const sql_search = id_produto
                 ? `SELECT * FROM tb_produto WHERE id_produto = $1`
                 : `SELECT * FROM tb_produto ORDER BY id_produto`;
-            const response:any = await query(sql_search, id_produto ? [id_produto] : []);
+            const response:any = await pool.query(sql_search, id_produto ? [id_produto] : []);
 
             if(response?.length > 0){
                 return {
@@ -110,7 +110,7 @@ class Produto {
                     WHERE id_produto = $6;
             `;
 
-            const response:any = await query(sql_update, [id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda, this.id_produto]);
+            const response:any = await pool.query(sql_update, [id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda, this.id_produto]);
 
             if(response){
                 this.id_fornecedor = id_fornecedor;
@@ -138,7 +138,7 @@ class Produto {
     public async deletarProduto(): Promise<object> {
         try {
             const sql_delete = `DELETE FROM tb_produto WHERE id_produto = $1`;
-            const response:any = await query(sql_delete, [this.id_produto]);
+            const response:any = await pool.query(sql_delete, [this.id_produto]);
 
             if(response){
                 return {

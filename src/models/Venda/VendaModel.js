@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../../services/db");
+const db_1 = __importDefault(require("../../services/db"));
 const MovimentoCaixaModel_1 = __importDefault(require("../MovimentoCaixa/MovimentoCaixaModel"));
 class Venda {
     constructor(id_venda, id_cliente, dt_venda, vr_venda, status) {
@@ -46,7 +46,7 @@ class Venda {
                 INSERT INTO tb_venda(id_cliente, dt_venda)
                 VALUES ($1, $2) RETURNING id_venda
             `;
-                const response = yield (0, db_1.query)(sql_insert, [id_cliente, dt_venda]);
+                const response = yield db_1.default.query(sql_insert, [id_cliente, dt_venda]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -73,7 +73,7 @@ class Venda {
                 const sql_search = id_venda
                     ? `SELECT * FROM tb_venda WHERE id_venda = $1`
                     : `SELECT * FROM tb_venda ORDER BY id_venda`;
-                const response = yield (0, db_1.query)(sql_search, id_venda ? [id_venda] : []);
+                const response = yield db_1.default.query(sql_search, id_venda ? [id_venda] : []);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -104,7 +104,7 @@ class Venda {
                     vr_venda = $3,
                     WHERE id_venda = $4;
             `;
-                const response = yield (0, db_1.query)(sql_update, [id_cliente, dt_venda, vr_venda, this.id_venda]);
+                const response = yield db_1.default.query(sql_update, [id_cliente, dt_venda, vr_venda, this.id_venda]);
                 if (response) {
                     this.id_cliente = id_cliente;
                     this.dt_venda = dt_venda;
@@ -131,7 +131,7 @@ class Venda {
             var _a;
             try {
                 const sql_delete = `DELETE FROM tb_venda WHERE id_venda = $1`;
-                const response = yield (0, db_1.query)(sql_delete, [this.id_venda]);
+                const response = yield db_1.default.query(sql_delete, [this.id_venda]);
                 if (response) {
                     return {
                         result: 'success',
@@ -155,7 +155,7 @@ class Venda {
             var _a, _b;
             try {
                 const sql_update = `UPDATE tb_venda SET status  = 'BAIXADA' WHERE id_venda = $1`;
-                const response = yield (0, db_1.query)(sql_update, [this.id_venda]);
+                const response = yield db_1.default.query(sql_update, [this.id_venda]);
                 if (response) {
                     const movimentacao = yield MovimentoCaixaModel_1.default.criarMovimentoCaixa(`Movimentação referente a venda: ${this.id_venda}`, this.vr_venda, 'VENDA', this.id_venda, 0);
                     if ((movimentacao === null || movimentacao === void 0 ? void 0 : movimentacao.result) === 'success') {
@@ -186,7 +186,7 @@ class Venda {
             var _a, _b;
             try {
                 const sql_update = `UPDATE tb_venda SET status  = 'ABERTA' WHERE id_venda = $1`;
-                const response = yield (0, db_1.query)(sql_update, [this.id_venda]);
+                const response = yield db_1.default.query(sql_update, [this.id_venda]);
                 if (response) {
                     const movimentacao = yield MovimentoCaixaModel_1.default.deletarMovimentoCaixa(this.id_venda, 0);
                     if ((movimentacao === null || movimentacao === void 0 ? void 0 : movimentacao.result) === 'success') {

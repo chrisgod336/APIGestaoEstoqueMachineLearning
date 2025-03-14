@@ -1,4 +1,4 @@
-import { query } from "../../services/db";
+import pool from "../../services/db";
 class MovimentoCaixa {
     private id_movimento_caixa: number;
     private id_venda: number;
@@ -63,7 +63,7 @@ class MovimentoCaixa {
             FROM tb_movimento_caixa
             ORDER BY id_movimento_caixa DESC`;
 
-        const response:any = await query(sql_search);
+        const response:any = await pool.query(sql_search);
 
         if (response?.length > 0) {
 
@@ -97,7 +97,7 @@ class MovimentoCaixa {
                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_movimento_caixa
             `;
 
-            const response:any = await query(sql_insert, [tx_descricao, vr_movimento, tx_tipo_movimento, dt_movimento, id_venda, id_compra]);
+            const response:any = await pool.query(sql_insert, [tx_descricao, vr_movimento, tx_tipo_movimento, dt_movimento, id_venda, id_compra]);
 
             if (response?.length > 0) {
 
@@ -122,7 +122,7 @@ class MovimentoCaixa {
             const sql_delete = id_venda? 
             `DELETE FROM tb_movimento_caixa WHERE id_venda = $1`: 
             `DELETE FROM tb_movimento_caixa WHERE id_compra = $1`;
-            const response:any = await query(sql_delete, [id_venda?id_venda:id_compra]);
+            const response:any = await pool.query(sql_delete, [id_venda?id_venda:id_compra]);
 
             if(response){
                 return {

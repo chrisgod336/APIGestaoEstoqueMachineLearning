@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../../services/db");
+const db_1 = __importDefault(require("../../services/db"));
 class LocalEstoque {
     constructor(id_local_estoque, tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco) {
         this.id_local_estoque = id_local_estoque;
@@ -45,7 +48,7 @@ class LocalEstoque {
                 INSERT INTO tb_local_estoque(tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco)
                 VALUES ($1, $2, $3, $4, $5) RETURNING id_local_estoque
             `;
-                const response = yield (0, db_1.query)(sql_insert, [tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco]);
+                const response = yield db_1.default.query(sql_insert, [tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -72,7 +75,7 @@ class LocalEstoque {
                 const sql_search = id_local_estoque
                     ? `SELECT * FROM tb_local_estoque WHERE id_local_estoque = $1`
                     : `SELECT * FROM tb_local_estoque ORDER BY id_local_estoque`;
-                const response = yield (0, db_1.query)(sql_search, id_local_estoque ? [id_local_estoque] : []);
+                const response = yield db_1.default.query(sql_search, id_local_estoque ? [id_local_estoque] : []);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -105,7 +108,7 @@ class LocalEstoque {
                     tx_endereco = $5
                     WHERE id_local_estoque = $6;
             `;
-                const response = yield (0, db_1.query)(sql_update, [tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco, this.id_local_estoque]);
+                const response = yield db_1.default.query(sql_update, [tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco, this.id_local_estoque]);
                 if (response) {
                     this.tx_nome = tx_nome;
                     this.tx_pais = tx_pais;
@@ -134,7 +137,7 @@ class LocalEstoque {
             var _a;
             try {
                 const sql_delete = `DELETE FROM tb_local_estoque WHERE id_local_estoque = $1`;
-                const response = yield (0, db_1.query)(sql_delete, [this.id_local_estoque]);
+                const response = yield db_1.default.query(sql_delete, [this.id_local_estoque]);
                 if (response) {
                     return {
                         result: 'success',

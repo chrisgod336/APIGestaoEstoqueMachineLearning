@@ -1,4 +1,4 @@
-import { query } from "../../services/db";
+import pool from "../../services/db";
 import MovimentoCaixa from "../MovimentoCaixa/MovimentoCaixaModel";
 class Compra {
     private id_compra: number;
@@ -87,7 +87,7 @@ class Compra {
         try {
             const sql_search = `SELECT nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega FROM tb_fornecedores WHERE id_fornecedor = $1`;
             const values = [id_fornecedor];
-            const response: any = await query(sql_search, values);
+            const response: any = await pool.query(sql_search, values);
     
             if (response?.length > 0) {
                 const dias_inc = response[0].nu_dias_previsao_inicial_entrega;
@@ -144,7 +144,7 @@ class Compra {
                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_compra
             `;
 
-            const response:any = await query(sql_insert, [id_fornecedor, id_local_estoque, dt_compra, 'PENDENTE', previsao_inicial, previsao_final]);
+            const response:any = await pool.query(sql_insert, [id_fornecedor, id_local_estoque, dt_compra, 'PENDENTE', previsao_inicial, previsao_final]);
 
             if (response?.length > 0) {
 
@@ -169,7 +169,7 @@ class Compra {
             const sql_search = id_compra
                 ? `SELECT * FROM tb_compra WHERE id_compra = $1`
                 : `SELECT * FROM tb_compra ORDER BY id_compra`;
-            const response:any = await query(sql_search, id_compra ? [id_compra] : []);
+            const response:any = await pool.query(sql_search, id_compra ? [id_compra] : []);
 
             if(response?.length > 0){
                 return {
@@ -212,7 +212,7 @@ class Compra {
                     WHERE id_compra = $8;
             `;
 
-            const response:any = await query(sql_update, [id_fornecedor, id_local_estoque, dt_compra, vr_total_compra, vr_frete, previsao_inicial, previsao_final, this.id_compra]);
+            const response:any = await pool.query(sql_update, [id_fornecedor, id_local_estoque, dt_compra, vr_total_compra, vr_frete, previsao_inicial, previsao_final, this.id_compra]);
 
             if(response){
 
@@ -243,7 +243,7 @@ class Compra {
     public async deletarCompra(): Promise<object> {
         try {
             const sql_delete = `DELETE FROM tb_compra WHERE id_compra = $1`;
-            const response:any = await query(sql_delete, [this.id_compra]);
+            const response:any = await pool.query(sql_delete, [this.id_compra]);
 
             if(response){
                 return {
@@ -265,7 +265,7 @@ class Compra {
         try {
 
             const sql_update = `UPDATE tb_compra SET dt_entrega = $1, tx_status  = 'BAIXADA' WHERE id_compra = $2`;
-            const response:any = await query(sql_update, [dt_entrega, this.id_compra]);
+            const response:any = await pool.query(sql_update, [dt_entrega, this.id_compra]);
 
             if(response){
 
@@ -306,7 +306,7 @@ class Compra {
         try {
 
             const sql_update = `UPDATE tb_compra SET dt_entrega = NULL, tx_status  = 'ABERTA' WHERE id_compra = $1`;
-            const response:any = await query(sql_update, [this.id_compra]);
+            const response:any = await pool.query(sql_update, [this.id_compra]);
 
             if(response){
 

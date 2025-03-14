@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../../services/db");
+const db_1 = __importDefault(require("../../services/db"));
 class CompraProduto {
     constructor(id_compra_produto, id_compra, id_estoque, id_produto, nu_quantidade, vr_total) {
         this.id_compra_produto = id_compra_produto;
@@ -43,7 +46,7 @@ class CompraProduto {
             try {
                 const sql_sum = `SELECT COALESCE(SUM(vr_total),0) AS sum FROM tb_compra_produto WHERE id_compra = ?`;
                 const values = [id_compra];
-                const response = yield (0, db_1.query)(sql_sum, values);
+                const response = yield db_1.default.query(sql_sum, values);
                 if (response.length === 0) {
                     return {
                         result: 'error',
@@ -53,7 +56,7 @@ class CompraProduto {
                 const sum = response[0].sum;
                 const sql_update = `UPDATE tb_compra SET vr_total = (? - vr_frete), vr_compra = ? WHERE id_compra = ?`;
                 const values2 = [sum, sum, id_compra];
-                const response2 = yield (0, db_1.query)(sql_update, values2);
+                const response2 = yield db_1.default.query(sql_update, values2);
                 if (response2) {
                     return {
                         result: 'success',
@@ -81,7 +84,7 @@ class CompraProduto {
             try {
                 const sql_search = `SELECT vr_preco_compra FROM tb_produto WHERE id_produto = ?`;
                 const values = [id_produto];
-                const response = yield (0, db_1.query)(sql_search, values);
+                const response = yield db_1.default.query(sql_search, values);
                 if (response.length === 0) {
                     return {
                         result: 'error',
@@ -119,7 +122,7 @@ class CompraProduto {
                 INSERT INTO tb_venda_produto(id_compra, id_estoque, id_produto, nu_quantidade, vr_total)
                 VALUES ($1, $2, $3, $4, $5) RETURNING id_compra_produto
             `;
-                const response = yield (0, db_1.query)(sql_insert, [id_compra, id_estoque, id_produto, nu_quantidade, vr_total]);
+                const response = yield db_1.default.query(sql_insert, [id_compra, id_estoque, id_produto, nu_quantidade, vr_total]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     const recalcular = yield this.recalcularCompra(id_compra);
                     if ((recalcular === null || recalcular === void 0 ? void 0 : recalcular.result) !== 'success') {
@@ -153,7 +156,7 @@ class CompraProduto {
                 const sql_search = id_compra_produto
                     ? `SELECT * FROM tb_compra_produto WHERE id_compra = $1 AND id_compra_produto = $2`
                     : `SELECT * FROM tb_compra_produto WHERE id_compra = $1 ORDER BY id_compra`;
-                const response = yield (0, db_1.query)(sql_search, id_compra_produto ? [id_compra, id_compra_produto] : [id_compra]);
+                const response = yield db_1.default.query(sql_search, id_compra_produto ? [id_compra, id_compra_produto] : [id_compra]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -194,7 +197,7 @@ class CompraProduto {
                     WHERE id_compra = $5
                     AND id_compra_produto = $6;
             `;
-                const response = yield (0, db_1.query)(sql_update, [id_estoque, id_produto, nu_quantidade, vr_total, this.id_compra, this.id_compra_produto]);
+                const response = yield db_1.default.query(sql_update, [id_estoque, id_produto, nu_quantidade, vr_total, this.id_compra, this.id_compra_produto]);
                 if (response) {
                     this.id_estoque = id_estoque;
                     this.id_produto = id_produto;
@@ -229,7 +232,7 @@ class CompraProduto {
             var _a, _b;
             try {
                 const sql_delete = `DELETE FROM tb_compra_produto WHERE id_compra = $1 AND id_compra_produto = $2;`;
-                const response = yield (0, db_1.query)(sql_delete, [this.id_compra, this.id_compra_produto]);
+                const response = yield db_1.default.query(sql_delete, [this.id_compra, this.id_compra_produto]);
                 if (response) {
                     const recalcular = yield CompraProduto.recalcularCompra(this.id_compra);
                     if ((recalcular === null || recalcular === void 0 ? void 0 : recalcular.result) !== 'success') {

@@ -1,4 +1,4 @@
-import { query } from "../../services/db";
+import pool from "../../services/db";
 class Cliente {
     private id_cliente: number;
     private tx_nome: string;
@@ -46,7 +46,7 @@ class Cliente {
                 INSERT INTO tb_cliente(tx_nome, tx_cpf_cnpj, tx_email, tx_telefone) VALUES ($1, $2, $3, $4) RETURNING id_cliente
             `;
 
-            const response:any = await query(sql_insert, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone]);
+            const response:any = await pool.query(sql_insert, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone]);
 
             if (response?.length > 0) {
 
@@ -71,7 +71,7 @@ class Cliente {
             const sql_search = id_cliente
                 ? `SELECT * FROM tb_cliente WHERE id_cliente = $1`
                 : `SELECT * FROM tb_cliente ORDER BY id_cliente`;
-            const response:any = await query(sql_search, id_cliente ? [id_cliente] : []);
+            const response:any = await pool.query(sql_search, id_cliente ? [id_cliente] : []);
 
             if(response?.length > 0){
                 return {
@@ -101,7 +101,7 @@ class Cliente {
                     WHERE id_cliente = $5;
             `;
 
-            const response:any = await query(sql_update, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone, this.id_cliente]);
+            const response:any = await pool.query(sql_update, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone, this.id_cliente]);
             if(response){
                 this.tx_nome = tx_nome;
                 this.tx_cpf_cnpj = tx_cpf_cnpj;
@@ -127,7 +127,7 @@ class Cliente {
     public async deletarCliente(): Promise<object> {
         try {
             const sql_delete = `DELETE FROM tb_cliente WHERE id_cliente = $1`;
-            const response:any = await query(sql_delete, [this.id_cliente]);
+            const response:any = await pool.query(sql_delete, [this.id_cliente]);
 
             if(response){
                 return {

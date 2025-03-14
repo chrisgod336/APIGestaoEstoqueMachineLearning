@@ -1,4 +1,4 @@
-import { query } from "../../services/db";
+import pool from "../../services/db";
 
 class Fornecedor {
     private id_fornecedor: number;
@@ -97,7 +97,7 @@ class Fornecedor {
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id_fornecedor
             `;
 
-            const response:any = await query(sql_insert, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco]);
+            const response:any = await pool.query(sql_insert, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco]);
 
             if (response?.length > 0) {
 
@@ -122,7 +122,7 @@ class Fornecedor {
             const sql_search = id_fornecedor
                 ? `SELECT * FROM tb_fornecedor WHERE id_fornecedor = $1`
                 : `SELECT * FROM tb_fornecedor ORDER BY id_fornecedor`;
-            const response:any = await query(sql_search, id_fornecedor ? [id_fornecedor] : []);
+            const response:any = await pool.query(sql_search, id_fornecedor ? [id_fornecedor] : []);
 
             if(response?.length > 0){
                 return {
@@ -159,7 +159,7 @@ class Fornecedor {
                     WHERE id_fornecedor = $12;
             `;
 
-            const response:any = await query(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco, this.id_fornecedor]);
+            const response:any = await pool.query(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco, this.id_fornecedor]);
 
             if(response){
                 this.tx_razao_social = tx_razao_social;
@@ -193,7 +193,7 @@ class Fornecedor {
     public async deletarFornecedor(): Promise<object> {
         try {
             const sql_delete = `DELETE FROM tb_fornecedor WHERE id_fornecedor = $1`;
-            const response:any = await query(sql_delete, [this.id_fornecedor]);
+            const response:any = await pool.query(sql_delete, [this.id_fornecedor]);
 
             if(response){
                 return {

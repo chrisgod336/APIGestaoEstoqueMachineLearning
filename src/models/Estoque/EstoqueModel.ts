@@ -1,4 +1,4 @@
-import { query } from "../../services/db";
+import pool from "../../services/db";
 
 class Estoque {
     private id_estoque: number;
@@ -62,7 +62,7 @@ class Estoque {
                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_estoque
             `;
 
-            const response:any = await query(sql_insert, [id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica]);
+            const response:any = await pool.query(sql_insert, [id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica]);
 
             if (response?.length > 0) {
 
@@ -87,7 +87,7 @@ class Estoque {
             const sql_search = id_estoque
                 ? `SELECT * FROM tb_estoque WHERE id_local_estoque = $1 AND id_estoque = $2`
                 : `SELECT * FROM tb_estoque WHERE id_local_estoque = $1 ORDER BY id_estoque`;
-            const response:any = await query(sql_search, id_estoque ? [id_local_estoque, id_estoque] : [id_local_estoque]);
+            const response:any = await pool.query(sql_search, id_estoque ? [id_local_estoque, id_estoque] : [id_local_estoque]);
 
             if(response?.length > 0){
                 return {
@@ -119,7 +119,7 @@ class Estoque {
                     WHERE id_estoque = $7;
             `;
 
-            const response:any = await query(sql_update, [id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica, this.id_estoque]);
+            const response:any = await pool.query(sql_update, [id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica, this.id_estoque]);
 
             if(response){
                 this.id_local_estoque = id_local_estoque;
@@ -148,7 +148,7 @@ class Estoque {
     public async deletarEstoque(): Promise<object> {
         try {
             const sql_delete = `DELETE FROM tb_estoque WHERE id_estoque = $1`;
-            const response:any = await query(sql_delete, [this.id_estoque]);
+            const response:any = await pool.query(sql_delete, [this.id_estoque]);
 
             if(response){
                 return {
@@ -171,7 +171,7 @@ class Estoque {
             const response = await Promise.all(
                 estoques.map(async estoque => {
                     const sql_search = `SELECT id_estoque FROM tb_estoque WHERE id_local_estoque = $1 AND id_produto = $2`;
-                    const response_search:any = await query(sql_search, [estoque.id_local_estoque, estoque.id_produto]);
+                    const response_search:any = await pool.query(sql_search, [estoque.id_local_estoque, estoque.id_produto]);
 
                     if(response_search.length > 0 && response_search[0]?.id_estoque > 0){
                         const id_estoque = response_search[0]?.id_estoque;
@@ -219,7 +219,7 @@ class Estoque {
 
             const sql_search = `SELECT id_estoque, id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica 
             FROM tb_estoque WHERE id_local_estoque = $1 AND id_produto = $2`;
-            const res:any = await query(sql_search, [id_local_estoque_ori, id_produto]);
+            const res:any = await pool.query(sql_search, [id_local_estoque_ori, id_produto]);
 
             
             if(res.length == 0 || res[0]?.id_estoque <= 0){
@@ -240,7 +240,7 @@ class Estoque {
             if(res1.result == "success"){
                 const sql_search = `SELECT id_estoque, id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica
                  FROM tb_estoque WHERE id_local_estoque = $1 AND id_produto = $2`;
-                const res2:any = await query(sql_search, [id_local_estoque_dest, id_produto]);
+                const res2:any = await pool.query(sql_search, [id_local_estoque_dest, id_produto]);
 
                 if(res2.length > 0 && res2[0].id_estoque > 0){
                     const estoqueDest = new Estoque(res2[0].id_estoque);

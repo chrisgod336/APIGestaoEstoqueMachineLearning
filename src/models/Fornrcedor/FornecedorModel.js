@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../../services/db");
+const db_1 = __importDefault(require("../../services/db"));
 class Fornecedor {
     constructor(id_fornecedor, tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco) {
         this.id_fornecedor = id_fornecedor;
@@ -69,7 +72,7 @@ class Fornecedor {
                 INSERT INTO tb_fornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id_fornecedor
             `;
-                const response = yield (0, db_1.query)(sql_insert, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco]);
+                const response = yield db_1.default.query(sql_insert, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -96,7 +99,7 @@ class Fornecedor {
                 const sql_search = id_fornecedor
                     ? `SELECT * FROM tb_fornecedor WHERE id_fornecedor = $1`
                     : `SELECT * FROM tb_fornecedor ORDER BY id_fornecedor`;
-                const response = yield (0, db_1.query)(sql_search, id_fornecedor ? [id_fornecedor] : []);
+                const response = yield db_1.default.query(sql_search, id_fornecedor ? [id_fornecedor] : []);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -135,7 +138,7 @@ class Fornecedor {
                         tx_endereco = $11
                     WHERE id_fornecedor = $12;
             `;
-                const response = yield (0, db_1.query)(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco, this.id_fornecedor]);
+                const response = yield db_1.default.query(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco, this.id_fornecedor]);
                 if (response) {
                     this.tx_razao_social = tx_razao_social;
                     this.tx_cpf_cnpj = tx_cpf_cnpj;
@@ -170,7 +173,7 @@ class Fornecedor {
             var _a;
             try {
                 const sql_delete = `DELETE FROM tb_fornecedor WHERE id_fornecedor = $1`;
-                const response = yield (0, db_1.query)(sql_delete, [this.id_fornecedor]);
+                const response = yield db_1.default.query(sql_delete, [this.id_fornecedor]);
                 if (response) {
                     return {
                         result: 'success',

@@ -1,4 +1,4 @@
-import { query } from "../../services/db";
+import pool from "../../services/db";
 class LocalEstoque {
     private id_local_estoque: number;
     private tx_nome: string;
@@ -54,7 +54,7 @@ class LocalEstoque {
                 VALUES ($1, $2, $3, $4, $5) RETURNING id_local_estoque
             `;
 
-            const response:any = await query(sql_insert, [tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco]);
+            const response:any = await pool.query(sql_insert, [tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco]);
 
             if (response?.length > 0) {
 
@@ -79,7 +79,7 @@ class LocalEstoque {
             const sql_search = id_local_estoque
                 ? `SELECT * FROM tb_local_estoque WHERE id_local_estoque = $1`
                 : `SELECT * FROM tb_local_estoque ORDER BY id_local_estoque`;
-            const response:any = await query(sql_search, id_local_estoque ? [id_local_estoque] : []);
+            const response:any = await pool.query(sql_search, id_local_estoque ? [id_local_estoque] : []);
 
             if(response?.length > 0){
                 return {
@@ -110,7 +110,7 @@ class LocalEstoque {
                     WHERE id_local_estoque = $6;
             `;
 
-            const response:any = await query(sql_update, [tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco, this.id_local_estoque]);
+            const response:any = await pool.query(sql_update, [tx_nome, tx_pais, tx_uf, tx_cidade, tx_endereco, this.id_local_estoque]);
 
             if(response){
                 this.tx_nome = tx_nome;
@@ -138,7 +138,7 @@ class LocalEstoque {
     public async deletarLocalEstoque(): Promise<object> {
         try {
             const sql_delete = `DELETE FROM tb_local_estoque WHERE id_local_estoque = $1`;
-            const response:any = await query(sql_delete, [this.id_local_estoque]);
+            const response:any = await pool.query(sql_delete, [this.id_local_estoque]);
 
             if(response){
                 return {

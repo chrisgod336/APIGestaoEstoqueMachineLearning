@@ -1,4 +1,4 @@
-import { query } from "../../services/db";
+import pool from "../../services/db";
 import Venda from "./VendaModel";
 class VendaProduto {
     private id_venda_produto: number;
@@ -62,7 +62,7 @@ class VendaProduto {
         const sql_sum = `SELECT COALESCE(SUM(vr_total),0) AS sum FROM tb_venda_produto WHERE id_venda = ?`;
         const values = [id_venda];
 
-        const response:any = await query(sql_sum, values);
+        const response:any = await pool.query(sql_sum, values);
 
         if(response.length === 0){
             return {
@@ -76,7 +76,7 @@ class VendaProduto {
         const sql_update = `UPDATE tb_venda SET vr_venda = ? WHERE id_venda = ?`;
         const values2 = [sum, id_venda];
 
-        const response2:any = await query(sql_update, values2);
+        const response2:any = await pool.query(sql_update, values2);
 
         if(response2){
             return {
@@ -104,7 +104,7 @@ class VendaProduto {
         const sql_search = `SELECT vr_preco_venda FROM tb_produto WHERE id_produto = ?`;
         const values = [id_produto];
 
-        const response:any = await query(sql_search, values);
+        const response:any = await pool.query(sql_search, values);
 
         if(response.length === 0){
             return {
@@ -149,7 +149,7 @@ class VendaProduto {
                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_venda¨_produto
             `;
 
-            const response:any = await query(sql_insert, [id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total]);
+            const response:any = await pool.query(sql_insert, [id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total]);
 
             if (response?.length > 0) {
 
@@ -184,7 +184,7 @@ class VendaProduto {
                 ? `SELECT * FROM tb_venda_produto WHERE id_venda = $1 AND id_venda_produto = $2`
                 : `SELECT * FROM tb_venda_produto WHERE id_venda = $1 ORDER BY id_venda`;
 
-            const response:any = await query(sql_search, id_venda_produto ? [id_venda, id_venda_produto] : [id_venda]);
+            const response:any = await pool.query(sql_search, id_venda_produto ? [id_venda, id_venda_produto] : [id_venda]);
 
             if(response?.length > 0){
                 return {
@@ -228,7 +228,7 @@ class VendaProduto {
                     AND id_venda_produto = $7;
             `;
 
-            const response:any = await query(sql_update, [id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total, this.id_venda, this.id_venda_produto]);
+            const response:any = await pool.query(sql_update, [id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total, this.id_venda, this.id_venda_produto]);
 
             if(response){
                 this.id_local_estoque =id_local_estoque;
@@ -265,7 +265,7 @@ class VendaProduto {
     public async deletarVendaProduto(): Promise<object> {
         try {
             const sql_delete = `DELETE FROM tb_venda_produto WHERE id_venda = $1 AND id_venda_produto = $2;`;
-            const response:any = await query(sql_delete, [this.id_venda, this.id_venda_produto]);
+            const response:any = await pool.query(sql_delete, [this.id_venda, this.id_venda_produto]);
 
             if(response){
 

@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../../services/db");
+const db_1 = __importDefault(require("../../services/db"));
 class MovimentoCaixa {
     constructor(id_movimento_caixa, id_venda, id_compra, tx_descricao, vr_movimento, dt_movimento, tx_tipo_movimento) {
         this.id_movimento_caixa = id_movimento_caixa;
@@ -49,7 +52,7 @@ class MovimentoCaixa {
         SELECT *
             FROM tb_movimento_caixa
             ORDER BY id_movimento_caixa DESC`;
-                const response = yield (0, db_1.query)(sql_search);
+                const response = yield db_1.default.query(sql_search);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -80,7 +83,7 @@ class MovimentoCaixa {
                 INSERT INTO tb_movimento_caixa(tx_descricao, vr_movimento, tx_tipo_movimento, dt_movimento, id_venda, id_compra)
                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_movimento_caixa
             `;
-                const response = yield (0, db_1.query)(sql_insert, [tx_descricao, vr_movimento, tx_tipo_movimento, dt_movimento, id_venda, id_compra]);
+                const response = yield db_1.default.query(sql_insert, [tx_descricao, vr_movimento, tx_tipo_movimento, dt_movimento, id_venda, id_compra]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -107,7 +110,7 @@ class MovimentoCaixa {
                 const sql_delete = id_venda ?
                     `DELETE FROM tb_movimento_caixa WHERE id_venda = $1` :
                     `DELETE FROM tb_movimento_caixa WHERE id_compra = $1`;
-                const response = yield (0, db_1.query)(sql_delete, [id_venda ? id_venda : id_compra]);
+                const response = yield db_1.default.query(sql_delete, [id_venda ? id_venda : id_compra]);
                 if (response) {
                     return {
                         result: 'success',

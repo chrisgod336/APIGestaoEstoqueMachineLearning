@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../../services/db");
+const db_1 = __importDefault(require("../../services/db"));
 class Produto {
     constructor(id_produto, id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda) {
         this.id_produto = id_produto;
@@ -45,7 +48,7 @@ class Produto {
                 INSERT INTO tb_produto(id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda)
                 VALUES ($1, $2, $3, $4, $5) RETURNING id_produto
             `;
-                const response = yield (0, db_1.query)(sql_insert, [id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda]);
+                const response = yield db_1.default.query(sql_insert, [id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -72,7 +75,7 @@ class Produto {
                 const sql_search = id_produto
                     ? `SELECT * FROM tb_produto WHERE id_produto = $1`
                     : `SELECT * FROM tb_produto ORDER BY id_produto`;
-                const response = yield (0, db_1.query)(sql_search, id_produto ? [id_produto] : []);
+                const response = yield db_1.default.query(sql_search, id_produto ? [id_produto] : []);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -105,7 +108,7 @@ class Produto {
                     vr_preco_venda = $5
                     WHERE id_produto = $6;
             `;
-                const response = yield (0, db_1.query)(sql_update, [id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda, this.id_produto]);
+                const response = yield db_1.default.query(sql_update, [id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda, this.id_produto]);
                 if (response) {
                     this.id_fornecedor = id_fornecedor;
                     this.tx_nome = tx_nome;
@@ -134,7 +137,7 @@ class Produto {
             var _a;
             try {
                 const sql_delete = `DELETE FROM tb_produto WHERE id_produto = $1`;
-                const response = yield (0, db_1.query)(sql_delete, [this.id_produto]);
+                const response = yield db_1.default.query(sql_delete, [this.id_produto]);
                 if (response) {
                     return {
                         result: 'success',

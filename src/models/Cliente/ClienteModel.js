@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../../services/db");
+const db_1 = __importDefault(require("../../services/db"));
 class Cliente {
     constructor(id_cliente, tx_nome, tx_cpf_cnpj, tx_email, tx_telefone) {
         this.id_cliente = id_cliente;
@@ -40,7 +43,7 @@ class Cliente {
                 const sql_insert = `
                 INSERT INTO tb_cliente(tx_nome, tx_cpf_cnpj, tx_email, tx_telefone) VALUES ($1, $2, $3, $4) RETURNING id_cliente
             `;
-                const response = yield (0, db_1.query)(sql_insert, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone]);
+                const response = yield db_1.default.query(sql_insert, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -67,7 +70,7 @@ class Cliente {
                 const sql_search = id_cliente
                     ? `SELECT * FROM tb_cliente WHERE id_cliente = $1`
                     : `SELECT * FROM tb_cliente ORDER BY id_cliente`;
-                const response = yield (0, db_1.query)(sql_search, id_cliente ? [id_cliente] : []);
+                const response = yield db_1.default.query(sql_search, id_cliente ? [id_cliente] : []);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -99,7 +102,7 @@ class Cliente {
                         tx_telefone = $4
                     WHERE id_cliente = $5;
             `;
-                const response = yield (0, db_1.query)(sql_update, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone, this.id_cliente]);
+                const response = yield db_1.default.query(sql_update, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone, this.id_cliente]);
                 if (response) {
                     this.tx_nome = tx_nome;
                     this.tx_cpf_cnpj = tx_cpf_cnpj;
@@ -127,7 +130,7 @@ class Cliente {
             var _a;
             try {
                 const sql_delete = `DELETE FROM tb_cliente WHERE id_cliente = $1`;
-                const response = yield (0, db_1.query)(sql_delete, [this.id_cliente]);
+                const response = yield db_1.default.query(sql_delete, [this.id_cliente]);
                 if (response) {
                     return {
                         result: 'success',

@@ -1,5 +1,4 @@
-import { query } from "../../services/db";
-
+import pool from "../../services/db";
 
 class Usuario {
     private id_usuario: number;
@@ -33,7 +32,7 @@ class Usuario {
     public static async loginUsuario(tx_email: string, tx_senha: string): Promise<object> {
         try {
             const sql_search = `SELECT * FROM tb_usuario WHERE tx_email = $1 AND tx_senha = $2`;
-            const response:any = await query(sql_search, [tx_email, tx_senha]);
+            const response:any = await pool.query(sql_search, [tx_email, tx_senha]);
 
             if (response?.length > 0) {
                 return {
@@ -62,7 +61,7 @@ class Usuario {
                 VALUES ($1, $2, $3, 'ADMIN') RETURNING id_usuario
             `;
 
-            const response:any = await query(sql_insert, [tx_nome, tx_email, tx_senha]);
+            const response:any = await pool.query(sql_insert, [tx_nome, tx_email, tx_senha]);
 
             if (response?.length > 0) {
 
@@ -83,11 +82,12 @@ class Usuario {
     }
 
     public static async buscarUsuario(id_usuario?: number): Promise<object> {
+
         try {
             const sql_search = id_usuario
                 ? `SELECT * FROM tb_usuario WHERE id_usuario = $1`
                 : `SELECT * FROM tb_usuario ORDER BY id_usuario`;
-            const response:any = await query(sql_search, id_usuario ? [id_usuario] : []);
+            const response:any = await pool.query(sql_search, id_usuario ? [id_usuario] : []);
 
             if(response?.length > 0){
                 return {
@@ -114,7 +114,7 @@ class Usuario {
                 WHERE id_usuario = $4
             `;
 
-            const response:any = await query(sql_update, [tx_nome, tx_email, tx_senha, this.id_usuario]);
+            const response:any = await pool.query(sql_update, [tx_nome, tx_email, tx_senha, this.id_usuario]);
 
             if(response){
                 this.tx_nome = tx_nome;
@@ -140,7 +140,7 @@ class Usuario {
     public async deletarUsuario(): Promise<object> {
         try {
             const sql_delete = `DELETE FROM tb_usuario WHERE id_usuario = $1`;
-            const response:any = await query(sql_delete, [this.id_usuario]);
+            const response:any = await pool.query(sql_delete, [this.id_usuario]);
 
             if(response){
                 return {

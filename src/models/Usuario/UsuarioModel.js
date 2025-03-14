@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const db_1 = require("../../services/db");
+const db_1 = __importDefault(require("../../services/db"));
 class Usuario {
     constructor(id_usuario, tx_nome, tx_email, tx_senha) {
         this.id_usuario = id_usuario;
@@ -34,7 +37,7 @@ class Usuario {
             var _a;
             try {
                 const sql_search = `SELECT * FROM tb_usuario WHERE tx_email = $1 AND tx_senha = $2`;
-                const response = yield (0, db_1.query)(sql_search, [tx_email, tx_senha]);
+                const response = yield db_1.default.query(sql_search, [tx_email, tx_senha]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -65,7 +68,7 @@ class Usuario {
                 INSERT INTO tb_usuario(tx_nome, tx_email, tx_senha, tx_tipo_usuario)
                 VALUES ($1, $2, $3, 'ADMIN') RETURNING id_usuario
             `;
-                const response = yield (0, db_1.query)(sql_insert, [tx_nome, tx_email, tx_senha]);
+                const response = yield db_1.default.query(sql_insert, [tx_nome, tx_email, tx_senha]);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -92,7 +95,7 @@ class Usuario {
                 const sql_search = id_usuario
                     ? `SELECT * FROM tb_usuario WHERE id_usuario = $1`
                     : `SELECT * FROM tb_usuario ORDER BY id_usuario`;
-                const response = yield (0, db_1.query)(sql_search, id_usuario ? [id_usuario] : []);
+                const response = yield db_1.default.query(sql_search, id_usuario ? [id_usuario] : []);
                 if ((response === null || response === void 0 ? void 0 : response.length) > 0) {
                     return {
                         result: 'success',
@@ -121,7 +124,7 @@ class Usuario {
                 SET tx_nome = $1, tx_email = $2, tx_senha = $3
                 WHERE id_usuario = $4
             `;
-                const response = yield (0, db_1.query)(sql_update, [tx_nome, tx_email, tx_senha, this.id_usuario]);
+                const response = yield db_1.default.query(sql_update, [tx_nome, tx_email, tx_senha, this.id_usuario]);
                 if (response) {
                     this.tx_nome = tx_nome;
                     this.tx_email = tx_email;
@@ -148,7 +151,7 @@ class Usuario {
             var _a;
             try {
                 const sql_delete = `DELETE FROM tb_usuario WHERE id_usuario = $1`;
-                const response = yield (0, db_1.query)(sql_delete, [this.id_usuario]);
+                const response = yield db_1.default.query(sql_delete, [this.id_usuario]);
                 if (response) {
                     return {
                         result: 'success',
@@ -169,3 +172,10 @@ class Usuario {
     }
 }
 exports.default = Usuario;
+
+const func = async () => {
+    const res = await Usuario.buscarUsuario(1);
+    console.log(res)
+}
+
+func();
