@@ -1,11 +1,11 @@
-import { Router } from "express";
-import MovimentoCaixaController from "../../controllers/MovimentoCaixaController/MovimentoCaixaController";
+// import { Router } from "express";
+// import MovimentoCaixaController from "../../controllers/MovimentoCaixaController/MovimentoCaixaController";
 
-const router = Router();
+// const router = Router();
 
-const asyncHandler = (fn: Function) => (req: any, res: any, next: any) =>
-    Promise.resolve(fn(req, res, next)).catch(next);
+// const asyncHandler = (fn: Function) => (req: any, res: any, next: any) =>
+//     Promise.resolve(fn(req, res, next)).catch(next);
 
-router.get("/buscar", asyncHandler(MovimentoCaixaController.buscar));
+// router.get("/buscar", asyncHandler(MovimentoCaixaController.buscar));
 
-export default router;
+// export default router;
