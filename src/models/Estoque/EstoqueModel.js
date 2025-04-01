@@ -204,7 +204,7 @@ class Estoque {
                 }
                 const EstoqueOri = new Estoque(res[0].id_estoque);
                 const res1 = yield EstoqueOri.atualizarEstoque(res[0].id_local_estoque, res[0].id_produto, (res[0].nu_quantidade - nu_quantidade_mov), res[0].nu_quantidade_minima, res[0].nu_quantidade_maxima, res[0].lo_reposicao_automatica);
-                if (res1) {
+                if (!res1) {
                     throw new Error('Erro ao atualizar estoque de origem.');
                 }
                 const res2 = yield app_1.db.all(`SELECT id_estoque, id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica
@@ -212,13 +212,13 @@ class Estoque {
                 if (res2.length > 0 && res2[0].id_estoque > 0) {
                     const estoqueDest = new Estoque(res2[0].id_estoque);
                     const res3 = yield estoqueDest.atualizarEstoque(res2[0].id_local_estoque, res2[0].id_produto, (res2[0].nu_quantidade + nu_quantidade_mov), res2[0].nu_quantidade_minima, res2[0].nu_quantidade_maxima, res2[0].lo_reposicao_automatica);
-                    if (res3) {
+                    if (!res3) {
                         throw new Error('Erro ao tentar ralizar operação');
                     }
                 }
                 else {
                     const res3 = yield Estoque.criarEstoque(id_local_estoque_dest, id_produto, nu_quantidade_mov, 0, 0, true);
-                    if (res3) {
+                    if (!res3) {
                         throw new Error('Erro ao tentar ralizar operação');
                     }
                 }

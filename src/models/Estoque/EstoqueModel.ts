@@ -246,7 +246,7 @@ class Estoque {
                 res[0].lo_reposicao_automatica
             );
 
-            if(res1){
+            if(!res1){
                 throw new Error('Erro ao atualizar estoque de origem.');
             }
 
@@ -267,7 +267,7 @@ class Estoque {
                     res2[0].lo_reposicao_automatica
                 );
 
-                if(res3){
+                if(!res3){
                     throw new Error('Erro ao tentar ralizar operação');
                 }
             } else {
@@ -280,7 +280,7 @@ class Estoque {
                     true
                 );
 
-                if(res3){
+                if(!res3){
                     throw new Error('Erro ao tentar ralizar operação');
                 }
             }
