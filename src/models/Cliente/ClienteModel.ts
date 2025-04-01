@@ -1,180 +1,213 @@
+import { db } from "../../../app";
 
-// class Cliente {
-//     private id_cliente: number;
-//     private tx_nome: string;
-//     private tx_cpf_cnpj: string;
-//     private tx_email: string;
-//     private tx_telefone: string;
+class Cliente {
+    private id_cliente: number;
+    private tx_nome: string;
+    private tx_cpf_cnpj: string;
+    private tx_email: string;
+    private tx_telefone: string;
 
-//     constructor(
-//         id_cliente: number,
-//         tx_nome?: string,
-//         tx_cpf_cnpj?: string,
-//         tx_email?: string,
-//         tx_telefone?: string
-//     ) {
-//         this.id_cliente = id_cliente;
-//         this.tx_nome = tx_nome ?? "";
-//         this.tx_cpf_cnpj = tx_cpf_cnpj ?? "";
-//         this.tx_email = tx_email ?? "";
-//         this.tx_telefone = tx_telefone ?? "";
-//     }
+    constructor(
+        id_cliente: number,
+        tx_nome?: string,
+        tx_cpf_cnpj?: string,
+        tx_email?: string,
+        tx_telefone?: string
+    ) {
+        this.id_cliente = id_cliente;
+        this.tx_nome = tx_nome ?? "";
+        this.tx_cpf_cnpj = tx_cpf_cnpj ?? "";
+        this.tx_email = tx_email ?? "";
+        this.tx_telefone = tx_telefone ?? "";
+    }
 
-//     public getIdCliente(): number {
-//         return this.id_cliente;
-//     }
+    public getIdCliente(): number {
+        return this.id_cliente;
+    }
 
-//     public getTxNome(): string {
-//         return this.tx_nome;
-//     }
+    public getTxNome(): string {
+        return this.tx_nome;
+    }
 
-//     public getTxCpfCnpj(): string {
-//         return this.tx_cpf_cnpj;
-//     }
+    public getTxCpfCnpj(): string {
+        return this.tx_cpf_cnpj;
+    }
 
-//     public getTxEmail(): string {
-//         return this.tx_email;
-//     }
+    public getTxEmail(): string {
+        return this.tx_email;
+    }
 
-//     public getTxTelefone(): string {
-//         return this.tx_telefone;
-//     }
+    public getTxTelefone(): string {
+        return this.tx_telefone;
+    }
 
-//     public static async criarCliente(tx_nome: string, tx_cpf_cnpj: string, tx_email: string, tx_telefone:string): Promise<object> {
-//         try {
-//             const sql_insert = `
-//                 INSERT INTO tb_cliente(tx_nome, tx_cpf_cnpj, tx_email, tx_telefone) VALUES ($1, $2, $3, $4) RETURNING id_cliente
-//             `;
+    public static async criarCliente(
+        tx_nome: string, 
+        tx_cpf_cnpj: string, 
+        tx_email: string, 
+        tx_telefone: string
+    ): Promise<object> {
+        try {
+            const sql_insert = `
+                INSERT INTO tb_cliente(tx_nome, tx_cpf_cnpj, tx_email, tx_telefone)
+                VALUES (?, ?, ?, ?)
+            `;
 
-//             const response:any = await pool.query(sql_insert, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone]);
+            const result = await db.run(sql_insert, [
+                tx_nome, tx_cpf_cnpj, tx_email, tx_telefone
+            ]);
 
-//             if (response?.length > 0) {
+            if (result.lastID) {
+                return {
+                    result: 'success',
+                    message: 'Cliente criado com sucesso',
+                    data: new Cliente(
+                        result.lastID, 
+                        tx_nome, 
+                        tx_cpf_cnpj, 
+                        tx_email, 
+                        tx_telefone
+                    )
+                };
+            }
+            throw new Error('Falha ao criar cliente');
+        } catch (error: any) {
+            return {
+                result: 'error',
+                message: error?.message ?? 'Erro ao tentar criar cliente.'
+            };
+        }
+    }
 
-//                 return {
-//                     result: 'success',
-//                     message: 'Cliente criado com sucesso',
-//                     data: new Cliente(response[0].id_cliente, tx_nome, tx_cpf_cnpj, tx_email, tx_telefone)
-//                 };
-//             } else {
-//                 throw new Error('Erro ao tentar inserir cliente');
-//             }
-//         } catch (error: any) {
-//             return {
-//                 result: 'error',
-//                 message: error?.message ?? 'Erro ao tentar criar cliente.'
-//             };
-//         }
-//     }
+    public static async buscarCliente(id_cliente?: number): Promise<object> {
+        try {
+            let sql: string;
+            let params: any[] = [];
 
-//     public static async buscarCliente(id_cliente?: number): Promise<object> {
-//         try {
-//             const sql_search = id_cliente
-//                 ? `SELECT * FROM tb_cliente WHERE id_cliente = $1`
-//                 : `SELECT * FROM tb_cliente ORDER BY id_cliente`;
-//             const response:any = await pool.query(sql_search, id_cliente ? [id_cliente] : []);
+            if (id_cliente) {
+                sql = `SELECT * FROM tb_cliente WHERE id_cliente = ?`;
+                params = [id_cliente];
+            } else {
+                sql = `SELECT * FROM tb_cliente ORDER BY id_cliente`;
+            }
 
-//             if(response?.length > 0){
-//                 return {
-//                     result: 'success',
-//                     message: 'Cliente(s) encontrado(s) com sucesso',
-//                     data: response
-//                 };
-//             }else{
-//                 throw new Error('Erro ao tentar buscar cliente(s).');
-//             }
-//         } catch (error: any) {
-//             return {
-//                 result: 'error',
-//                 message: error?.message ?? 'Erro ao tentar buscar cliente(s).'
-//             };
-//         }
-//     }
+            const response = await db.all(sql, params);
 
-//     public async atualizarCliente(tx_nome: string, tx_cpf_cnpj: string, tx_email: string, tx_telefone:string): Promise<object> {
-//         try {
-//             const sql_update = `
-//                 UPDATE tb_cliente
-//                     SET tx_nome = $1,
-//                         tx_cpf_cnpj = $2,
-//                         tx_email = $3,
-//                         tx_telefone = $4
-//                     WHERE id_cliente = $5;
-//             `;
+            return {
+                result: 'success',
+                message: response.length > 0 
+                    ? 'Cliente(s) encontrado(s) com sucesso' 
+                    : id_cliente ? 'Cliente não encontrado' : 'Nenhum cliente cadastrado',
+                data: response.length > 0 ? response : null
+            };
+        } catch (error: any) {
+            return {
+                result: 'error',
+                message: error?.message ?? 'Erro ao tentar buscar cliente(s).'
+            };
+        }
+    }
 
-//             const response:any = await pool.query(sql_update, [tx_nome, tx_cpf_cnpj, tx_email, tx_telefone, this.id_cliente]);
-//             if(response){
-//                 this.tx_nome = tx_nome;
-//                 this.tx_cpf_cnpj = tx_cpf_cnpj;
-//                 this.tx_email = tx_email;
-//                 this.tx_telefone = tx_telefone;
-    
-//                 return {
-//                     result: 'success',
-//                     message: 'Cliente atualizado com sucesso'
-//                 };
-//             }else{
-//                 throw new Error('Erro ao tentar atualizar cliente.');
-//             }
+    public async atualizarCliente(
+        tx_nome: string, 
+        tx_cpf_cnpj: string, 
+        tx_email: string, 
+        tx_telefone: string
+    ): Promise<object> {
+        try {
+            const sql_update = `
+                UPDATE tb_cliente
+                SET tx_nome = ?,
+                    tx_cpf_cnpj = ?,
+                    tx_email = ?,
+                    tx_telefone = ?
+                WHERE id_cliente = ?
+            `;
 
-//         } catch (error: any) {
-//             return {
-//                 result: 'error',
-//                 message: error?.message ?? 'Erro ao tentar atualizar cliente.'
-//             };
-//         }
-//     }
+            const result = await db.run(sql_update, [
+                tx_nome, tx_cpf_cnpj, tx_email, tx_telefone, 
+                this.id_cliente
+            ]);
 
-//     public async deletarCliente(): Promise<object> {
-//         try {
-//             const sql_delete = `DELETE FROM tb_cliente WHERE id_cliente = $1`;
-//             const response:any = await pool.query(sql_delete, [this.id_cliente]);
+            if (result) {
+                this.tx_nome = tx_nome;
+                this.tx_cpf_cnpj = tx_cpf_cnpj;
+                this.tx_email = tx_email;
+                this.tx_telefone = tx_telefone;
+                
+                return {
+                    result: 'success',
+                    message: 'Cliente atualizado com sucesso'
+                };
+            }
+            throw new Error('Nenhum cliente foi atualizado');
+        } catch (error: any) {
+            return {
+                result: 'error',
+                message: error?.message ?? 'Erro ao tentar atualizar cliente.'
+            };
+        }
+    }
 
-//             if(response){
-//                 return {
-//                     result: 'success',
-//                     message: 'Cliente deletado com sucesso'
-//                 };
-//             }else{
-//                 throw new Error('Erro ao tentar deletar cliente.');
-//             }
-//         } catch (error: any) {
-//             return {
-//                 result: 'error',
-//                 message: error?.message ?? 'Erro ao tentar deletar cliente.'
-//             };
-//         }
-//     }
+    public async deletarCliente(): Promise<object> {
+        try {
+            const result = await db.run(
+                'DELETE FROM tb_cliente WHERE id_cliente = ?', 
+                [this.id_cliente]
+            );
 
-//     public static async criarClienteLote(clientes: Array<{ 
-//         tx_nome: string, 
-//         tx_cpf_cnpj: string, 
-//         tx_email: string, 
-//         tx_telefone: string
-//     }>): Promise<object> {
-//         try {
-//             const response = await Promise.all(
-//                 clientes.map(cliente => 
-//                     this.criarCliente(
-//                         cliente.tx_nome, 
-//                         cliente.tx_cpf_cnpj, 
-//                         cliente.tx_email, 
-//                         cliente.tx_telefone
-//                     )
-//                 )
-//             );
-    
-//             return {
-//                 result: 'success',
-//                 message: `${response.length} clientes criados com sucesso.`,
-//                 data: response
-//             };
-//         } catch (error: any) {
-//             return {
-//                 result: 'error',
-//                 message: error?.message ?? 'Erro ao criar clientes em lote.'
-//             };
-//         }
-//     }
-// }
+            return {
+                result: result? 'success' : 'error',
+                message: result 
+                    ? 'Cliente deletado com sucesso' 
+                    : 'Nenhum cliente foi deletado'
+            };
+        } catch (error: any) {
+            return {
+                result: 'error',
+                message: error?.message ?? 'Erro ao tentar deletar cliente.'
+            };
+        }
+    }
 
-// export default Cliente;
+    public static async criarClienteLote(clientes: Array<{ 
+        tx_nome: string, 
+        tx_cpf_cnpj: string, 
+        tx_email: string, 
+        tx_telefone: string
+    }>): Promise<object> {
+        try {
+            await db.run('BEGIN TRANSACTION');
+            
+            const results = [];
+            for (const cliente of clientes) {
+                const result = await db.run(
+                    `INSERT INTO tb_cliente(
+                        tx_nome, tx_cpf_cnpj, tx_email, tx_telefone
+                    ) VALUES (?, ?, ?, ?)`,
+                    [
+                        cliente.tx_nome, cliente.tx_cpf_cnpj, 
+                        cliente.tx_email, cliente.tx_telefone
+                    ]
+                );
+                results.push(result.lastID);
+            }
+            
+            await db.run('COMMIT');
+            
+            return {
+                result: 'success',
+                message: `${clientes.length} clientes criados com sucesso.`,
+                data: results
+            };
+        } catch (error: any) {
+            await db.run('ROLLBACK');
+            return {
+                result: 'error',
+                message: error?.message ?? 'Erro ao criar clientes em lote.'
+            };
+        }
+    }
+}
+
+export default Cliente;

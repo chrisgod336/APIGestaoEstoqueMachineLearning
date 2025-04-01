@@ -1,12 +1,15 @@
 "use strict";
-// import express from "express";
-// import ProdutoController from "../../controllers/ProdutoController/ProdutoContorller";
-// const router = express.Router();
-// const asyncHandler = (fn: Function) => (req: any, res: any, next: any) =>
-//     Promise.resolve(fn(req, res, next)).catch(next);
-// router.post("/criar", asyncHandler(ProdutoController.criar));
-// router.get("/buscar", asyncHandler(ProdutoController.buscar));
-// router.put("/atualizar", asyncHandler(ProdutoController.atualizar));
-// router.delete("/deletar", asyncHandler(ProdutoController.deletar));
-// router.post("/criarLote", asyncHandler(ProdutoController.criarLote));
-// export default router;
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const ProdutoContorller_1 = __importDefault(require("../../controllers/ProdutoController/ProdutoContorller"));
+const router = express_1.default.Router();
+const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+router.post("/criar", asyncHandler(ProdutoContorller_1.default.criar));
+router.get("/buscar", asyncHandler(ProdutoContorller_1.default.buscar));
+router.put("/atualizar", asyncHandler(ProdutoContorller_1.default.atualizar));
+router.delete("/deletar", asyncHandler(ProdutoContorller_1.default.deletar));
+router.post("/criarLote", asyncHandler(ProdutoContorller_1.default.criarLote));
+exports.default = router;

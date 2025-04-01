@@ -21,12 +21,12 @@ const fs_1 = __importDefault(require("fs"));
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const sqlite_1 = require("sqlite");
 // Importação de rotas
-// import UsuarioRoutes from './src/routes/UsuarioRoutes/UsuarioRoutes';
-// import FornecedorRoutes from './src/routes/FornecedorRoutes/FornecedorRoutes';
-// import ClienteRoutes from './src/routes/ClienteRoutes/ClienteRoutes';
-// import ProdutoRoutes from './src/routes/ProdutoRoutes/ProdutoRoutes';
-// import LocalEstoqueRoutes from './src/routes/EstoqueRoutes/LocalEstoqueRoutes';
-// import EstoqueRoutes from './src/routes/EstoqueRoutes/EstoqueRoutes';
+const UsuarioRoutes_1 = __importDefault(require("./src/routes/UsuarioRoutes/UsuarioRoutes"));
+const FornecedorRoutes_1 = __importDefault(require("./src/routes/FornecedorRoutes/FornecedorRoutes"));
+const ClienteRoutes_1 = __importDefault(require("./src/routes/ClienteRoutes/ClienteRoutes"));
+const ProdutoRoutes_1 = __importDefault(require("./src/routes/ProdutoRoutes/ProdutoRoutes"));
+const LocalEstoqueRoutes_1 = __importDefault(require("./src/routes/EstoqueRoutes/LocalEstoqueRoutes"));
+const EstoqueRoutes_1 = __importDefault(require("./src/routes/EstoqueRoutes/EstoqueRoutes"));
 // import VendaRoutes from './src/routes/VendaRoutes/VendaRoutes';
 // import VendaProdutoRoutes from './src/routes/VendaRoutes/VendaProdutoRoutes';
 // import CompraRoutes from './src/routes/CompraRoutes/CompraRoutes';
@@ -73,12 +73,12 @@ app.get('/', (req, res) => {
     res.send('API com SQLite está rodando 🚀');
 });
 // Configuração das rotas
-// app.use("/usuario", UsuarioRoutes);
-// app.use("/fornecedor", FornecedorRoutes);
-// app.use("/cliente", ClienteRoutes);
-// app.use("/produto", ProdutoRoutes);
-// app.use("/localEstoque", LocalEstoqueRoutes);
-// app.use("/estoque", EstoqueRoutes);
+app.use("/usuario", UsuarioRoutes_1.default);
+app.use("/fornecedor", FornecedorRoutes_1.default);
+app.use("/cliente", ClienteRoutes_1.default);
+app.use("/produto", ProdutoRoutes_1.default);
+app.use("/localEstoque", LocalEstoqueRoutes_1.default);
+app.use("/estoque", EstoqueRoutes_1.default);
 // app.use("/venda", VendaRoutes);
 // app.use("/vendaProduto", VendaProdutoRoutes);
 // app.use("/compra", CompraRoutes);
