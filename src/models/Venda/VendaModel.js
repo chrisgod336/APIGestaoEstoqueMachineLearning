@@ -8,12 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
-const MovimentoCaixaModel_1 = __importDefault(require("../MovimentoCaixa/MovimentoCaixaModel"));
 class Venda {
     constructor(id_venda, id_cliente, dt_venda, vr_venda, status) {
         this.id_venda = id_venda;
@@ -152,16 +148,12 @@ class Venda {
                 yield app_1.db.run('BEGIN TRANSACTION');
                 const result = yield app_1.db.run('UPDATE tb_venda SET status = ? WHERE id_venda = ?', ['BAIXADA', this.id_venda]);
                 if (result) {
-                    const movimentacao = yield MovimentoCaixaModel_1.default.criarMovimentoCaixa(`Movimentação referente a venda: ${this.id_venda}`, this.vr_venda, 'VENDA', this.id_venda, 0);
-                    if (movimentacao) {
-                        this.status = 'BAIXADA';
-                        yield app_1.db.run('COMMIT');
-                        return {
-                            result: 'success',
-                            message: 'Venda baixada com sucesso.'
-                        };
-                    }
-                    throw new Error('Erro ao tentar baixar venda.');
+                    this.status = 'BAIXADA';
+                    yield app_1.db.run('COMMIT');
+                    return {
+                        result: 'success',
+                        message: 'Venda baixada com sucesso.'
+                    };
                 }
                 throw new Error('Erro ao tentar baixar venda.');
             }
@@ -181,16 +173,12 @@ class Venda {
                 yield app_1.db.run('BEGIN TRANSACTION');
                 const result = yield app_1.db.run('UPDATE tb_venda SET status = ? WHERE id_venda = ?', ['ABERTA', this.id_venda]);
                 if (result) {
-                    const movimentacao = yield MovimentoCaixaModel_1.default.deletarMovimentoCaixa(this.id_venda, 0);
-                    if (movimentacao) {
-                        this.status = 'ABERTA';
-                        yield app_1.db.run('COMMIT');
-                        return {
-                            result: 'success',
-                            message: 'Venda extornada com sucesso.'
-                        };
-                    }
-                    throw new Error('Erro ao tentar extornar venda.');
+                    this.status = 'ABERTA';
+                    yield app_1.db.run('COMMIT');
+                    return {
+                        result: 'success',
+                        message: 'Venda extornada com sucesso.'
+                    };
                 }
                 throw new Error('Erro ao tentar extornar venda.');
             }

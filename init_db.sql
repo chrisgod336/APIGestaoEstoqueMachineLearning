@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS tb_compra(
   vr_frete REAL NOT NULL,
   tx_status TEXT,
   dt_previsao_entrega_inicial TIMESTAMP NOT NULL,
-  dt_previsao_entraga_final TIMESTAMP NOT NULL,
+  dt_previsao_entrage_final TIMESTAMP NOT NULL,
   dt_entrega TIMESTAMP,
   CONSTRAINT fk_compra_fornecedor FOREIGN KEY (id_fornecedor) 
     REFERENCES tb_fornecedor(id_fornecedor) ON DELETE CASCADE,
@@ -126,8 +126,11 @@ CREATE TABLE IF NOT EXISTS tb_compra_produto(
   nu_quantidade INTEGER NOT NULL,
   vr_total REAL NOT NULL,
   id_estoque INTEGER NOT NULL,
+  id_local_estoque INTEGER NOT NULL, 
   CONSTRAINT fk_compra_produto_compra FOREIGN KEY (id_compra) 
     REFERENCES tb_compra(id_compra) ON DELETE CASCADE,
+  CONSTRAINT fk_compra_produto_local_estoque FOREIGN KEY (id_local_estoque)
+    REFERENCES tb_local_estoque(id_local_estoque) ON DELETE RESTRICT,
   CONSTRAINT fk_compra_produto_estoque FOREIGN KEY (id_estoque)
     REFERENCES tb_estoque(id_estoque) ON DELETE RESTRICT,
   CONSTRAINT fk_compra_produto_produto FOREIGN KEY (id_produto) 

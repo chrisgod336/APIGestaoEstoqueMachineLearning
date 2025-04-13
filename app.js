@@ -29,9 +29,8 @@ const LocalEstoqueRoutes_1 = __importDefault(require("./src/routes/EstoqueRoutes
 const EstoqueRoutes_1 = __importDefault(require("./src/routes/EstoqueRoutes/EstoqueRoutes"));
 const VendaRoutes_1 = __importDefault(require("./src/routes/VendaRoutes/VendaRoutes"));
 const VendaProdutoRoutes_1 = __importDefault(require("./src/routes/VendaRoutes/VendaProdutoRoutes"));
-// import CompraRoutes from './src/routes/CompraRoutes/CompraRoutes';
-// import CompraProdutoRoutes from './src/routes/CompraRoutes/CompraProdutoRoutes';
-const MovimentoCaixaRoutes_1 = __importDefault(require("./src/routes/MovimentoCaixaRoutes/MovimentoCaixaRoutes"));
+const CompraRoutes_1 = __importDefault(require("./src/routes/CompraRoutes/CompraRoutes"));
+const CompraProdutoRoutes_1 = __importDefault(require("./src/routes/CompraRoutes/CompraProdutoRoutes"));
 // Configuração inicial
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -81,9 +80,8 @@ app.use("/localEstoque", LocalEstoqueRoutes_1.default);
 app.use("/estoque", EstoqueRoutes_1.default);
 app.use("/venda", VendaRoutes_1.default);
 app.use("/vendaProduto", VendaProdutoRoutes_1.default);
-// app.use("/compra", CompraRoutes);
-// app.use("/compraProdutos", CompraProdutoRoutes);
-app.use("/movimentoCaixa", MovimentoCaixaRoutes_1.default);
+app.use("/compra", CompraRoutes_1.default);
+app.use("/compraProduto", CompraProdutoRoutes_1.default);
 // Inicialização do servidor
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {

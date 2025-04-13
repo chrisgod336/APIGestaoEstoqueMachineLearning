@@ -1,5 +1,4 @@
 import { db } from "../../../app";
-import MovimentoCaixa from "../MovimentoCaixa/MovimentoCaixaModel";
 
 class Venda {
     private id_venda: number;
@@ -159,24 +158,15 @@ class Venda {
             );
 
             if (result) {
-                const movimentacao = await MovimentoCaixa.criarMovimentoCaixa(
-                    `Movimentação referente a venda: ${this.id_venda}`, 
-                    this.vr_venda, 
-                    'VENDA', 
-                    this.id_venda,
-                    0
-                );
 
-                if (movimentacao) {
-                    this.status = 'BAIXADA';
-                    await db.run('COMMIT');
-                    
-                    return {
-                        result: 'success',
-                        message: 'Venda baixada com sucesso.'
-                    };
-                }
-                throw new Error('Erro ao tentar baixar venda.');
+                this.status = 'BAIXADA';
+                await db.run('COMMIT');
+                
+                return {
+                    result: 'success',
+                    message: 'Venda baixada com sucesso.'
+                };
+    
             }
             throw new Error('Erro ao tentar baixar venda.');
         } catch (error: any) {
@@ -198,18 +188,14 @@ class Venda {
             );
 
             if (result) {
-                const movimentacao = await MovimentoCaixa.deletarMovimentoCaixa(this.id_venda, 0);
 
-                if (movimentacao) {
-                    this.status = 'ABERTA';
-                    await db.run('COMMIT');
-                    
-                    return {
-                        result: 'success',
-                        message: 'Venda extornada com sucesso.'
-                    };
-                }
-                throw new Error('Erro ao tentar extornar venda.');
+                this.status = 'ABERTA';
+                await db.run('COMMIT');
+                
+                return {
+                    result: 'success',
+                    message: 'Venda extornada com sucesso.'
+                };
             }
             throw new Error('Erro ao tentar extornar venda.');
         } catch (error: any) {

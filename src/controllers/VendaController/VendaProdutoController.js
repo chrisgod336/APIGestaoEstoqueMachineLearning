@@ -41,9 +41,8 @@ class VendaProdutoController {
     static atualizar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { id_venda_produto } = req.params;
-                const { id_local_estoque, id_estoque, id_produto, nu_quantidade } = req.body;
-                const vendaProduto = new VendaProdutoModel_1.default(Number(id_venda_produto), 0, 0, 0, 0);
+                const { id_venda, id_venda_produto, id_local_estoque, id_estoque, id_produto, nu_quantidade } = req.body;
+                const vendaProduto = new VendaProdutoModel_1.default(Number(id_venda_produto), id_venda, 0, 0, 0);
                 const resultado = yield vendaProduto.atualizarVendaProduto(id_local_estoque, id_estoque, id_produto, nu_quantidade);
                 res.status(200).json(resultado);
             }

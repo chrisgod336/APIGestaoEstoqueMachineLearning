@@ -1,5 +1,4 @@
 import { db } from "../../../app";
-import MovimentoCaixa from "../MovimentoCaixa/MovimentoCaixaModel";
 
 class Compra {
     private id_compra: number;
@@ -87,7 +86,7 @@ class Compra {
     public static async calcularPeriodoEntrega(id_fornecedor: number, dt_compra: string): Promise<object> {
         try {
             const response = await db.get(
-                'SELECT nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega FROM tb_fornecedores WHERE id_fornecedor = ?',
+                'SELECT nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega FROM tb_fornecedor WHERE id_fornecedor = ?',
                 [id_fornecedor]
             );
 
@@ -135,19 +134,15 @@ class Compra {
     ): Promise<object> {
         try {
             const dataCompra = dt_compra ?? new Date().toISOString();
-            const periodo_entrega = await this.calcularPeriodoEntrega(id_fornecedor, dataCompra);
-
-            if (periodo_entrega) {
-                return periodo_entrega;
-            }
+            const periodo_entrega:any = await this.calcularPeriodoEntrega(id_fornecedor, dataCompra);
 
             const { previsao_inicial, previsao_final } = periodo_entrega;
 
             const result = await db.run(
                 `INSERT INTO tb_compra(
                     id_fornecedor, id_local_estoque, dt_compra, 
-                    tx_status, dt_previsao_entrega_inicial, dt_previsao_entrega_final
-                ) VALUES (?, ?, ?, ?, ?, ?)`,
+                    tx_status, dt_previsao_entrega_inicial, dt_previsao_entrega_final, vr_total_compra, vr_compra, vr_frete
+                ) VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0)`,
                 [
                     id_fornecedor, 
                     id_local_estoque, 
@@ -218,10 +213,7 @@ class Compra {
         vr_frete: number
     ): Promise<object> {
         try {
-            const periodo_entrega = await Compra.calcularPeriodoEntrega(id_fornecedor, dt_compra);
-            if (periodo_entrega) {
-                return periodo_entrega;
-            }
+            const periodo_entrega:any = await Compra.calcularPeriodoEntrega(id_fornecedor, dt_compra);
 
             const { previsao_inicial, previsao_final } = periodo_entrega;
             const vr_total_compra = this.vr_compra + vr_frete;
@@ -302,25 +294,16 @@ class Compra {
             );
 
             if (result) {
-                const movimentacao = await MovimentoCaixa.criarMovimentoCaixa(
-                    `Movimentação referente a compra: ${this.id_compra}`,
-                    this.vr_total_compra,
-                    'COMPRA',
-                    0,
-                    this.id_compra
-                );
 
-                if (movimentacao) {
-                    this.dt_entrega = dt_entrega;
-                    this.tx_status = 'BAIXADA';
-                    await db.run('COMMIT');
-                    
-                    return {
-                        result: 'success',
-                        message: 'Compra baixada com sucesso'
-                    };
-                }
-                throw new Error('Erro ao registrar movimentação');
+                this.dt_entrega = dt_entrega;
+                this.tx_status = 'BAIXADA';
+                await db.run('COMMIT');
+                
+                return {
+                    result: 'success',
+                    message: 'Compra baixada com sucesso'
+                };
+                
             }
             throw new Error('Falha ao baixar compra');
         } catch (error: any) {
@@ -342,19 +325,16 @@ class Compra {
             );
 
             if (result) {
-                const movimentacao = await MovimentoCaixa.deletarMovimentoCaixa(0, this.id_compra);
 
-                if (movimentacao) {
-                    this.dt_entrega = '';
-                    this.tx_status = 'ABERTA';
-                    await db.run('COMMIT');
-                    
-                    return {
-                        result: 'success',
-                        message: 'Compra extornada com sucesso'
-                    };
-                }
-                throw new Error('Erro ao remover movimentação');
+                this.dt_entrega = '';
+                this.tx_status = 'ABERTA';
+                await db.run('COMMIT');
+                
+                return {
+                    result: 'success',
+                    message: 'Compra extornada com sucesso'
+                };
+
             }
             throw new Error('Falha ao extornar compra');
         } catch (error: any) {

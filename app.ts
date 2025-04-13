@@ -17,7 +17,6 @@ import VendaRoutes from './src/routes/VendaRoutes/VendaRoutes';
 import VendaProdutoRoutes from './src/routes/VendaRoutes/VendaProdutoRoutes';
 import CompraRoutes from './src/routes/CompraRoutes/CompraRoutes';
 import CompraProdutoRoutes from './src/routes/CompraRoutes/CompraProdutoRoutes';
-import MovimentoCaixaRoutes from './src/routes/MovimentoCaixaRoutes/MovimentoCaixaRoutes';
 
 // Configuração inicial
 dotenv.config();
@@ -78,8 +77,7 @@ app.use("/estoque", EstoqueRoutes);
 app.use("/venda", VendaRoutes);
 app.use("/vendaProduto", VendaProdutoRoutes);
 app.use("/compra", CompraRoutes);
-app.use("/compraProdutos", CompraProdutoRoutes);
-app.use("/movimentoCaixa", MovimentoCaixaRoutes);
+app.use("/compraProduto", CompraProdutoRoutes);
 
 // Inicialização do servidor
 async function startServer() {

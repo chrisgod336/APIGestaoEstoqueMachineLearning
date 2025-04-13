@@ -10,7 +10,7 @@ router.post("/criar", asyncHandler(CompraController.criar));
 router.get("/buscar", asyncHandler(CompraController.buscar));
 router.put("/atualizar", asyncHandler(CompraController.atualizar));
 router.delete("/deletar", asyncHandler(CompraController.deletar));
-router.post("/baixar", asyncHandler(CompraController.baixar));
-router.post("/extornar", asyncHandler(CompraController.extornar));
+router.put("/baixar", asyncHandler(CompraController.baixar));
+router.put("/extornar", asyncHandler(CompraController.extornar));
 
 export default router;
