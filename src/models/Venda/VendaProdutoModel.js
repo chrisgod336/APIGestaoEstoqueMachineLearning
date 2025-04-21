@@ -11,10 +11,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
 class VendaProduto {
-    constructor(id_venda_produto, id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total) {
+    constructor(id_venda_produto, id_venda, id_estoque, id_produto, nu_quantidade, vr_total) {
         this.id_venda_produto = id_venda_produto;
         this.id_venda = id_venda;
-        this.id_local_estoque = id_local_estoque;
         this.id_estoque = id_estoque;
         this.id_produto = id_produto;
         this.nu_quantidade = nu_quantidade !== null && nu_quantidade !== void 0 ? nu_quantidade : 0;
@@ -25,9 +24,6 @@ class VendaProduto {
     }
     getIdVenda() {
         return this.id_venda;
-    }
-    getIdLocalEstoque() {
-        return this.id_local_estoque;
     }
     getIdEstoque() {
         return this.id_estoque;
@@ -89,7 +85,7 @@ class VendaProduto {
             }
         });
     }
-    static criarVendaProduto(id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade) {
+    static criarVendaProduto(id_venda, id_estoque, id_produto, nu_quantidade) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
@@ -99,9 +95,9 @@ class VendaProduto {
                 }
                 const vr_total = calcula_vr_total === null || calcula_vr_total === void 0 ? void 0 : calcula_vr_total.data;
                 const result = yield app_1.db.run(`INSERT INTO tb_venda_produto(
-                    id_venda, id_local_estoque, id_estoque, 
+                    id_venda, id_estoque, 
                     id_produto, nu_quantidade, vr_total
-                ) VALUES (?, ?, ?, ?, ?, ?)`, [id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total]);
+                ) VALUES (?, ?, ?, ?, ?)`, [id_venda, id_estoque, id_produto, nu_quantidade, vr_total]);
                 if (result.lastID) {
                     const recalcular = yield this.recalcularVenda(id_venda);
                     if (recalcular) {
@@ -110,7 +106,7 @@ class VendaProduto {
                     return {
                         result: 'success',
                         message: 'Item adicionado a venda com sucesso',
-                        data: new VendaProduto(result.lastID, id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total)
+                        data: new VendaProduto(result.lastID, id_venda, id_estoque, id_produto, nu_quantidade, vr_total)
                     };
                 }
                 throw new Error('Falha ao adicionar item à venda');
@@ -154,7 +150,7 @@ class VendaProduto {
             }
         });
     }
-    atualizarVendaProduto(id_local_estoque, id_estoque, id_produto, nu_quantidade) {
+    atualizarVendaProduto(id_estoque, id_produto, nu_quantidade) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
@@ -164,15 +160,13 @@ class VendaProduto {
                 }
                 const vr_total = calcula_vr_total === null || calcula_vr_total === void 0 ? void 0 : calcula_vr_total.data;
                 const result = yield app_1.db.run(`UPDATE tb_venda_produto
-                SET id_local_estoque = ?,
-                    id_estoque = ?,
+                SET id_estoque = ?,
                     id_produto = ?,
                     nu_quantidade = ?,
                     vr_total = ?
                 WHERE id_venda = ?
-                AND id_venda_produto = ?`, [id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total, this.id_venda, this.id_venda_produto]);
+                AND id_venda_produto = ?`, [id_estoque, id_produto, nu_quantidade, vr_total, this.id_venda, this.id_venda_produto]);
                 if (result) {
-                    this.id_local_estoque = id_local_estoque;
                     this.id_estoque = id_estoque;
                     this.id_produto = id_produto;
                     this.nu_quantidade = nu_quantidade;

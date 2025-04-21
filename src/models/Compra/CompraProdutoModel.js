@@ -11,10 +11,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
 class CompraProduto {
-    constructor(id_compra_produto, id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total) {
+    constructor(id_compra_produto, id_compra, id_estoque, id_produto, nu_quantidade, vr_total) {
         this.id_compra_produto = id_compra_produto;
         this.id_compra = id_compra;
-        this.id_local_estoque = id_local_estoque;
         this.id_estoque = id_estoque;
         this.id_produto = id_produto;
         this.nu_quantidade = nu_quantidade !== null && nu_quantidade !== void 0 ? nu_quantidade : 0;
@@ -28,9 +27,6 @@ class CompraProduto {
     }
     getIdProduto() {
         return this.id_produto;
-    }
-    getIdLocalEstoque() {
-        return this.id_local_estoque;
     }
     getIdEstoque() {
         return this.id_estoque;
@@ -88,7 +84,7 @@ class CompraProduto {
             }
         });
     }
-    static criarCompraProduto(id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade) {
+    static criarCompraProduto(id_compra, id_estoque, id_produto, nu_quantidade) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
@@ -98,8 +94,8 @@ class CompraProduto {
                 }
                 const vr_total = calcula_vr_total.data;
                 const result = yield app_1.db.run(`INSERT INTO tb_compra_produto(
-                    id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total
-                ) VALUES (?, ?, ?, ?, ?, ?)`, [id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total]);
+                    id_compra, id_estoque, id_produto, nu_quantidade, vr_total
+                ) VALUES (?, ?, ?, ?, ?)`, [id_compra, id_estoque, id_produto, nu_quantidade, vr_total]);
                 if (result.lastID) {
                     const recalcular = yield this.recalcularCompra(id_compra);
                     if (recalcular.result !== 'success') {
@@ -108,7 +104,7 @@ class CompraProduto {
                     return {
                         result: 'success',
                         message: 'Item adicionado à compra com sucesso',
-                        data: new CompraProduto(result.lastID, id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total)
+                        data: new CompraProduto(result.lastID, id_compra, id_estoque, id_produto, nu_quantidade, vr_total)
                     };
                 }
                 throw new Error('Falha ao adicionar item à compra');
@@ -152,7 +148,7 @@ class CompraProduto {
             }
         });
     }
-    atualizarCompraProduto(id_local_estoque, id_estoque, id_produto, nu_quantidade) {
+    atualizarCompraProduto(id_estoque, id_produto, nu_quantidade) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
@@ -162,15 +158,13 @@ class CompraProduto {
                 }
                 const vr_total = calcula_vr_total.data;
                 const result = yield app_1.db.run(`UPDATE tb_compra_produto
-                SET id_local_estoque = ?,
-                    id_estoque = ?,
+                SET id_estoque = ?,
                     id_produto = ?,
                     nu_quantidade = ?,
                     vr_total = ?
                 WHERE id_compra = ?
-                AND id_compra_produto = ?`, [id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total, this.id_compra, this.id_compra_produto]);
+                AND id_compra_produto = ?`, [id_estoque, id_produto, nu_quantidade, vr_total, this.id_compra, this.id_compra_produto]);
                 if (result.changes > 0) {
-                    this.id_local_estoque = id_local_estoque;
                     this.id_estoque = id_estoque;
                     this.id_produto = id_produto;
                     this.nu_quantidade = nu_quantidade;

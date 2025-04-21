@@ -11,17 +11,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
 class Compra {
-    constructor(id_compra, id_fornecedor, id_local_estoque, dt_compra, tx_status, dt_previsao_entrega_inicial, dt_previsao_entrega_final, vr_total_compra, vr_compra, vr_frete, dt_entrega) {
+    constructor(id_compra, id_fornecedor, dt_compra, tx_status, vr_total_compra, vr_compra, vr_frete, dt_entrega) {
         this.id_compra = id_compra;
         this.id_fornecedor = id_fornecedor;
-        this.id_local_estoque = id_local_estoque;
         this.dt_compra = dt_compra !== null && dt_compra !== void 0 ? dt_compra : "";
         this.vr_total_compra = vr_total_compra !== null && vr_total_compra !== void 0 ? vr_total_compra : 0;
         this.vr_compra = vr_compra !== null && vr_compra !== void 0 ? vr_compra : 0;
         this.vr_frete = vr_frete !== null && vr_frete !== void 0 ? vr_frete : 0;
-        this.tx_status = tx_status !== null && tx_status !== void 0 ? tx_status : "PENDENTE";
-        this.dt_previsao_entrega_inicial = dt_previsao_entrega_inicial !== null && dt_previsao_entrega_inicial !== void 0 ? dt_previsao_entrega_inicial : "";
-        this.dt_previsao_entrega_final = dt_previsao_entrega_final !== null && dt_previsao_entrega_final !== void 0 ? dt_previsao_entrega_final : "";
+        this.tx_status = tx_status !== null && tx_status !== void 0 ? tx_status : "ABERTA";
         this.dt_entrega = dt_entrega !== null && dt_entrega !== void 0 ? dt_entrega : "";
     }
     getIdCompra() {
@@ -29,9 +26,6 @@ class Compra {
     }
     getIdFornecedor() {
         return this.id_fornecedor;
-    }
-    getIdLocalEstoque() {
-        return this.id_local_estoque;
     }
     getDtCompra() {
         return this.dt_compra;
@@ -48,76 +42,25 @@ class Compra {
     getTxStatus() {
         return this.tx_status;
     }
-    getDtPrevisaoEntregaInicial() {
-        return this.dt_previsao_entrega_inicial;
-    }
-    getDtPrevisaoEntregaFinal() {
-        return this.dt_previsao_entrega_final;
-    }
     getDtEntrega() {
         return this.dt_entrega;
     }
-    static calcularPeriodoEntrega(id_fornecedor, dt_compra) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            try {
-                const response = yield app_1.db.get('SELECT nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega FROM tb_fornecedor WHERE id_fornecedor = ?', [id_fornecedor]);
-                if (!response) {
-                    return {
-                        result: 'error',
-                        message: 'Fornecedor não encontrado'
-                    };
-                }
-                const dias_inc = response.nu_dias_previsao_inicial_entrega;
-                const dias_fim = response.nu_dias_previsao_final_entrega;
-                const dataCompra = new Date(dt_compra);
-                if (isNaN(dataCompra.getTime())) {
-                    return {
-                        result: 'error',
-                        message: 'Data de compra inválida'
-                    };
-                }
-                const previsaoInicial = new Date(dataCompra);
-                previsaoInicial.setDate(previsaoInicial.getDate() + dias_inc);
-                const previsaoFinal = new Date(dataCompra);
-                previsaoFinal.setDate(previsaoFinal.getDate() + dias_fim);
-                return {
-                    result: 'success',
-                    previsao_inicial: previsaoInicial.toISOString().split('T')[0],
-                    previsao_final: previsaoFinal.toISOString().split('T')[0]
-                };
-            }
-            catch (error) {
-                return {
-                    result: 'error',
-                    message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : 'Erro ao calcular período de entrega'
-                };
-            }
-        });
-    }
-    static criarCompra(id_fornecedor, id_local_estoque, dt_compra) {
+    static criarCompra(id_fornecedor, dt_compra) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
                 const dataCompra = dt_compra !== null && dt_compra !== void 0 ? dt_compra : new Date().toISOString();
-                const periodo_entrega = yield this.calcularPeriodoEntrega(id_fornecedor, dataCompra);
-                const { previsao_inicial, previsao_final } = periodo_entrega;
                 const result = yield app_1.db.run(`INSERT INTO tb_compra(
-                    id_fornecedor, id_local_estoque, dt_compra, 
-                    tx_status, dt_previsao_entrega_inicial, dt_previsao_entrega_final, vr_total_compra, vr_compra, vr_frete
-                ) VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0)`, [
+                    id_fornecedor, dt_compra
+                ) VALUES (?, ?, ?, ?, ?)`, [
                     id_fornecedor,
-                    id_local_estoque,
-                    dataCompra,
-                    'PENDENTE',
-                    previsao_inicial,
-                    previsao_final
+                    dataCompra
                 ]);
                 if (result.lastID) {
                     return {
                         result: 'success',
                         message: 'Compra criada com sucesso',
-                        data: new Compra(result.lastID, id_fornecedor, id_local_estoque, dataCompra, 'PENDENTE', previsao_inicial, previsao_final)
+                        data: new Compra(result.lastID, id_fornecedor)
                     };
                 }
                 throw new Error('Falha ao criar compra');
@@ -160,39 +103,28 @@ class Compra {
             }
         });
     }
-    atualizarCompra(id_fornecedor, id_local_estoque, dt_compra, vr_frete) {
+    atualizarCompra(id_fornecedor, dt_compra, vr_frete) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const periodo_entrega = yield Compra.calcularPeriodoEntrega(id_fornecedor, dt_compra);
-                const { previsao_inicial, previsao_final } = periodo_entrega;
                 const vr_total_compra = this.vr_compra + vr_frete;
                 const result = yield app_1.db.run(`UPDATE tb_compra
                 SET id_fornecedor = ?,
-                    id_local_estoque = ?,
                     dt_compra = ?,
                     vr_total_compra = ?,
                     vr_frete = ?,
-                    dt_previsao_entrega_inicial = ?,
-                    dt_previsao_entrega_final = ?
                 WHERE id_compra = ?`, [
                     id_fornecedor,
-                    id_local_estoque,
                     dt_compra,
                     vr_total_compra,
                     vr_frete,
-                    previsao_inicial,
-                    previsao_final,
                     this.id_compra
                 ]);
                 if (result) {
                     this.id_fornecedor = id_fornecedor;
-                    this.id_local_estoque = id_local_estoque;
                     this.dt_compra = dt_compra;
                     this.vr_total_compra = vr_total_compra;
                     this.vr_frete = vr_frete;
-                    this.dt_previsao_entrega_inicial = previsao_inicial;
-                    this.dt_previsao_entrega_final = previsao_final;
                     return {
                         result: 'success',
                         message: 'Compra atualizada com sucesso'

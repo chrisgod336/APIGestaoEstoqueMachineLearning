@@ -38,17 +38,6 @@ class ProdutoController {
         const result:any = await produto.deletarProduto();
         return res.status(result.result === "success" ? 200 : 400).json(result);
     }
-
-    static async criarLote(req: Request, res: Response) {
-        const { produtos } = req.body;
-
-        if (!Array.isArray(produtos) || produtos.length === 0) {
-            return res.status(400).json({ result: "error", message: "Lista de produtos inválida." });
-        }
-
-        const result:any = await Produto.criarProdutosLote(produtos);
-        return res.status(result.result === "success" ? 201 : 400).json(result);
-    }
 }
 
 export default ProdutoController;

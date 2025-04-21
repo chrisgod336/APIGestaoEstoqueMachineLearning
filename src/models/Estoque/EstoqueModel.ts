@@ -2,37 +2,21 @@ import { db } from "../../../app";
 
 class Estoque {
     private id_estoque: number;
-    private id_local_estoque: number;
     private id_produto: number;
     private nu_quantidade: number;
-    private nu_quantidade_minima: number;
-    private nu_quantidade_maxima: number;
-    private lo_reposicao_automatica: boolean;
 
     constructor(
         id_estoque: number,
-        id_local_estoque?: number,
         id_produto?: number,
-        nu_quantidade?: number,
-        nu_quantidade_minima?: number,
-        nu_quantidade_maxima?: number,
-        lo_reposicao_automatica?: boolean
+        nu_quantidade?: number
     ) {
         this.id_estoque = id_estoque;
-        this.id_local_estoque = id_local_estoque??0;
         this.id_produto = id_produto??0;
         this.nu_quantidade = nu_quantidade ?? 0;
-        this.nu_quantidade_minima = nu_quantidade_minima ?? 0;
-        this.nu_quantidade_maxima = nu_quantidade_maxima ?? 0;
-        this.lo_reposicao_automatica = lo_reposicao_automatica ?? false;
     }
 
     public getIdEstoque(): number {
         return this.id_estoque;
-    }
-
-    public getIdLocalEstoque(): number {
-        return this.id_local_estoque;
     }
 
     public getIdProduto(): number {
@@ -43,32 +27,20 @@ class Estoque {
         return this.nu_quantidade;
     }
 
-    public getNuQuantidadeMinima(): number {
-        return this.nu_quantidade_minima;
-    }
-
-    public getNuQuantidadeMaxima(): number {
-        return this.nu_quantidade_maxima;
-    }
-
-    public getLoReposicaoAutomatica(): boolean {
-        return this.lo_reposicao_automatica;
-    }
-
-    public static async criarEstoque(id_local_estoque:number, id_produto:number, nu_quantidade:number, nu_quantidade_minima:number, nu_quantidade_maxima:number, lo_reposicao_automatica:boolean): Promise<object> {
+    public static async criarEstoque(id_produto:number, nu_quantidade:number): Promise<object> {
         try {
             const sql_insert = `
-                INSERT INTO tb_estoque(id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO tb_estoque(id_produto, nu_quantidade)
+                VALUES (?, ?)
             `;
 
-            const result = await db.run(sql_insert, [id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica]);
+            const result = await db.run(sql_insert, [id_produto, nu_quantidade]);
 
             if (result.lastID) {
                 return {
                     result: 'success',
                     message: 'Estoque criado com sucesso',
-                    data: new Estoque(result.lastID, id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica)
+                    data: new Estoque(result.lastID, id_produto, nu_quantidade)
                 };
             }
             throw new Error('Falha ao criar estoque');
@@ -80,16 +52,20 @@ class Estoque {
         }
     }
 
-    public static async buscarEstoque(id_local_estoque: number, id_estoque?: number): Promise<object> {
+    public static async buscarEstoque(id_estoque?: number): Promise<object> {
         try {
             let sql: string;
-            let params: any[] = [id_local_estoque];
+            let params: any[] = [];
 
             if (id_estoque) {
-                sql = `SELECT * FROM tb_estoque WHERE id_local_estoque = ? AND id_estoque = ?`;
+                sql = `SELECT * FROM tb_estoque WHERE id_estoque = ?`;
                 params.push(id_estoque);
             } else {
-                sql = `SELECT * FROM tb_estoque WHERE id_local_estoque = ? ORDER BY id_estoque`;
+                sql = `SELECT tb_estoque.*, tb_produto.id_produto||' - '||tb_produto.tx_nome AS produto 
+                       FROM tb_estoque
+                       INNER JOIN tb_produto 
+                       ON tb_estoque.id_produto = tb_produto.id_produto
+                       ORDER BY id_estoque`;
             }
 
             const response = await db.all(sql, params);
@@ -109,32 +85,20 @@ class Estoque {
         }
     }
 
-    public async atualizarEstoque(id_local_estoque:number, id_produto:number, nu_quantidade:number, nu_quantidade_minima:number, nu_quantidade_maxima:number, lo_reposicao_automatica:boolean): Promise<object> {
+    public async atualizarEstoque(id_produto:number, nu_quantidade:number): Promise<object> {
         try {
             const sql_update = `
                 UPDATE tb_estoque
-                SET id_local_estoque = ?,
-                    id_produto = ?,
-                    nu_quantidade = ?,
-                    nu_quantidade_minima = ?,
-                    nu_quantidade_maxima = ?,
-                    lo_reposicao_automatica = ?
+                SET id_produto = ?,
+                    nu_quantidade = ?
                 WHERE id_estoque = ?
             `;
 
-            const result = await db.run(sql_update, [
-                id_local_estoque, id_produto, nu_quantidade, 
-                nu_quantidade_minima, nu_quantidade_maxima, 
-                lo_reposicao_automatica, this.id_estoque
-            ]);
+            const result = await db.run(sql_update, [id_produto, nu_quantidade, this.id_estoque]);
 
             if (result) {
-                this.id_local_estoque = id_local_estoque;
                 this.id_produto = id_produto;
                 this.nu_quantidade = nu_quantidade;
-                this.nu_quantidade_minima = nu_quantidade_minima;
-                this.nu_quantidade_maxima = nu_quantidade_maxima;
-                this.lo_reposicao_automatica = lo_reposicao_automatica;
                 
                 return {
                     result: 'success',
@@ -171,133 +135,30 @@ class Estoque {
         }
     }
 
-    public static async atualizarEstoquesLote(estoques: Array<{id_local_estoque:number, id_produto:number, nu_quantidade:number, nu_quantidade_minima:number, nu_quantidade_maxima:number, lo_reposicao_automatica:boolean}>): Promise<object> {
+    public static async countProduto(id_produto: number): Promise<object> {
         try {
-            await db.run('BEGIN TRANSACTION');
-            
-            const results = [];
-            for (const estoque of estoques) {
-                const response_search = await db.all(
-                    'SELECT id_estoque FROM tb_estoque WHERE id_local_estoque = ? AND id_produto = ?',
-                    [estoque.id_local_estoque, estoque.id_produto]
-                );
+            let sql: string;
+            let params: any[] = [id_produto];
 
-                let result;
-                if (response_search.length > 0 && response_search[0]?.id_estoque > 0) {
-                    const stq = new Estoque(response_search[0].id_estoque);
-                    result = await stq.atualizarEstoque(
-                        estoque.id_local_estoque,
-                        estoque.id_produto,
-                        estoque.nu_quantidade,
-                        estoque.nu_quantidade_minima,
-                        estoque.nu_quantidade_maxima,
-                        estoque.lo_reposicao_automatica
-                    );
-                } else {
-                    result = await Estoque.criarEstoque(
-                        estoque.id_local_estoque,
-                        estoque.id_produto,
-                        estoque.nu_quantidade,
-                        estoque.nu_quantidade_minima,
-                        estoque.nu_quantidade_maxima,
-                        estoque.lo_reposicao_automatica
-                    );
-                }
-                results.push(result);
-            }
-            
-            await db.run('COMMIT');
-            
+            sql = `SELECT COUNT(*) AS count FROM tb_estoque WHERE id_produto = ?`;
+
+            const response = await db.all(sql, params);
+
             return {
                 result: 'success',
-                message: `${estoques.length} estoques atualizados com sucesso.`,
-                data: results
+                message: response.length > 0 
+                    ? 'Produto encontrado com sucesso' 
+                    : 'Produto não encontrado',
+                data: response||0
             };
         } catch (error: any) {
-            await db.run('ROLLBACK');
             return {
                 result: 'error',
-                message: error?.message ?? 'Erro ao atualizar estoque em lote.'
+                message: error?.message ?? 'Erro ao tentar buscar produtos(s).'
             };
         }
     }
 
-    public static async movimentarEstoque(id_local_estoque_ori:number, id_local_estoque_dest:number, id_produto:number, nu_quantidade_mov:number): Promise<object> {
-        try {
-            await db.run('BEGIN TRANSACTION');
-
-            const res = await db.all(
-                `SELECT id_estoque, id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica 
-                FROM tb_estoque WHERE id_local_estoque = ? AND id_produto = ?`,
-                [id_local_estoque_ori, id_produto]
-            );
-
-            if(res.length == 0 || res[0]?.id_estoque <= 0){
-                throw new Error('Estoque de origem não encontrado.');
-            }
-
-            const EstoqueOri = new Estoque(res[0].id_estoque);
-            const res1 = await EstoqueOri.atualizarEstoque(
-                res[0].id_local_estoque,
-                res[0].id_produto,
-                (res[0].nu_quantidade - nu_quantidade_mov),
-                res[0].nu_quantidade_minima,
-                res[0].nu_quantidade_maxima,
-                res[0].lo_reposicao_automatica
-            );
-
-            if(!res1){
-                throw new Error('Erro ao atualizar estoque de origem.');
-            }
-
-            const res2 = await db.all(
-                `SELECT id_estoque, id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica
-                FROM tb_estoque WHERE id_local_estoque = ? AND id_produto = ?`,
-                [id_local_estoque_dest, id_produto]
-            );
-
-            if(res2.length > 0 && res2[0].id_estoque > 0){
-                const estoqueDest = new Estoque(res2[0].id_estoque);
-                const res3 = await estoqueDest.atualizarEstoque(
-                    res2[0].id_local_estoque,
-                    res2[0].id_produto,
-                    (res2[0].nu_quantidade + nu_quantidade_mov),
-                    res2[0].nu_quantidade_minima,
-                    res2[0].nu_quantidade_maxima,
-                    res2[0].lo_reposicao_automatica
-                );
-
-                if(!res3){
-                    throw new Error('Erro ao tentar ralizar operação');
-                }
-            } else {
-                const res3 = await Estoque.criarEstoque(
-                    id_local_estoque_dest,
-                    id_produto,
-                    nu_quantidade_mov,
-                    0,
-                    0,
-                    true
-                );
-
-                if(!res3){
-                    throw new Error('Erro ao tentar ralizar operação');
-                }
-            }
-
-            await db.run('COMMIT');
-            return {
-                result: 'success',
-                message: `Estoque movimentado com sucesso.`,
-            };
-        } catch (error: any) {
-            await db.run('ROLLBACK');
-            return {
-                result: 'error',
-                message: error?.message ?? 'Erro ao movimentar estoque.'
-            };
-        }
-    }
 }
 
 export default Estoque;

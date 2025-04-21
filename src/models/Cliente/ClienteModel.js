@@ -147,36 +147,5 @@ class Cliente {
             }
         });
     }
-    static criarClienteLote(clientes) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            try {
-                yield app_1.db.run('BEGIN TRANSACTION');
-                const results = [];
-                for (const cliente of clientes) {
-                    const result = yield app_1.db.run(`INSERT INTO tb_cliente(
-                        tx_nome, tx_cpf_cnpj, tx_email, tx_telefone
-                    ) VALUES (?, ?, ?, ?)`, [
-                        cliente.tx_nome, cliente.tx_cpf_cnpj,
-                        cliente.tx_email, cliente.tx_telefone
-                    ]);
-                    results.push(result.lastID);
-                }
-                yield app_1.db.run('COMMIT');
-                return {
-                    result: 'success',
-                    message: `${clientes.length} clientes criados com sucesso.`,
-                    data: results
-                };
-            }
-            catch (error) {
-                yield app_1.db.run('ROLLBACK');
-                return {
-                    result: 'error',
-                    message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : 'Erro ao criar clientes em lote.'
-                };
-            }
-        });
-    }
 }
 exports.default = Cliente;

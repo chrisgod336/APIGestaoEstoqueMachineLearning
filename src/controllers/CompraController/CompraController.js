@@ -16,8 +16,8 @@ const CompraModel_1 = __importDefault(require("../../models/Compra/CompraModel")
 class CompraController {
     static criar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_fornecedor, id_local_estoque, dt_compra } = req.body;
-            const result = yield CompraModel_1.default.criarCompra(id_fornecedor, id_local_estoque, dt_compra);
+            const { id_fornecedor, dt_compra } = req.body;
+            const result = yield CompraModel_1.default.criarCompra(id_fornecedor, dt_compra);
             res.status(result.result === 'success' ? 201 : 400).json(result);
         });
     }
@@ -32,9 +32,9 @@ class CompraController {
     ;
     static atualizar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_compra, id_fornecedor, id_local_estoque, dt_compra, vr_frete } = req.body;
-            const compra = new CompraModel_1.default(Number(id_compra), id_fornecedor, id_local_estoque);
-            const result = yield compra.atualizarCompra(id_fornecedor, id_local_estoque, dt_compra, vr_frete);
+            const { id_compra, id_fornecedor, dt_compra, vr_frete } = req.body;
+            const compra = new CompraModel_1.default(Number(id_compra), id_fornecedor);
+            const result = yield compra.atualizarCompra(id_fornecedor, dt_compra, vr_frete);
             res.status(result.result === 'success' ? 200 : 400).json(result);
         });
     }
@@ -42,7 +42,7 @@ class CompraController {
     static deletar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id_compra } = req.query;
-            const compra = new CompraModel_1.default(Number(id_compra), 0, 0);
+            const compra = new CompraModel_1.default(Number(id_compra), 0);
             const result = yield compra.deletarCompra();
             res.status(result.result === 'success' ? 200 : 400).json(result);
         });
@@ -51,7 +51,7 @@ class CompraController {
     static baixar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id_compra, dt_entrega } = req.body;
-            const compra = new CompraModel_1.default(Number(id_compra), 0, 0);
+            const compra = new CompraModel_1.default(Number(id_compra), 0);
             const result = yield compra.baixarCompra(dt_entrega);
             res.status(result.result === 'success' ? 200 : 400).json(result);
         });
@@ -60,7 +60,7 @@ class CompraController {
     static extornar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id_compra } = req.body;
-            const compra = new CompraModel_1.default(Number(id_compra), 0, 0);
+            const compra = new CompraModel_1.default(Number(id_compra), 0);
             const result = yield compra.extornarCompra();
             res.status(result.result === 'success' ? 200 : 400).json(result);
         });

@@ -1,10 +1,8 @@
 import { db } from "../../../app";
-import Venda from "./VendaModel";
 
 class VendaProduto {
     private id_venda_produto: number;
     private id_venda: number;
-    private id_local_estoque: number;
     private id_estoque: number;
     private id_produto: number;
     private nu_quantidade: number;
@@ -13,7 +11,6 @@ class VendaProduto {
     constructor(
         id_venda_produto: number,
         id_venda: number,
-        id_local_estoque: number,
         id_estoque: number,
         id_produto: number,
         nu_quantidade?: number,
@@ -21,7 +18,6 @@ class VendaProduto {
     ) {
         this.id_venda_produto = id_venda_produto;
         this.id_venda = id_venda;
-        this.id_local_estoque = id_local_estoque;
         this.id_estoque = id_estoque;
         this.id_produto = id_produto;
         this.nu_quantidade = nu_quantidade ?? 0;
@@ -34,10 +30,6 @@ class VendaProduto {
 
     public getIdVenda(): number {
         return this.id_venda;
-    }
-
-    public getIdLocalEstoque(): number {
-        return this.id_local_estoque;
     }
 
     public getIdEstoque(): number {
@@ -112,7 +104,6 @@ class VendaProduto {
 
     public static async criarVendaProduto(
         id_venda: number,
-        id_local_estoque: number,
         id_estoque: number,
         id_produto: number,
         nu_quantidade: number
@@ -128,10 +119,10 @@ class VendaProduto {
 
             const result = await db.run(
                 `INSERT INTO tb_venda_produto(
-                    id_venda, id_local_estoque, id_estoque, 
+                    id_venda, id_estoque, 
                     id_produto, nu_quantidade, vr_total
-                ) VALUES (?, ?, ?, ?, ?, ?)`,
-                [id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total]
+                ) VALUES (?, ?, ?, ?, ?)`,
+                [id_venda, id_estoque, id_produto, nu_quantidade, vr_total]
             );
 
             if (result.lastID) {
@@ -146,7 +137,6 @@ class VendaProduto {
                     data: new VendaProduto(
                         result.lastID,
                         id_venda,
-                        id_local_estoque,
                         id_estoque,
                         id_produto,
                         nu_quantidade,
@@ -194,7 +184,6 @@ class VendaProduto {
     }
 
     public async atualizarVendaProduto(
-        id_local_estoque: number,
         id_estoque: number,
         id_produto: number,
         nu_quantidade: number
@@ -209,18 +198,16 @@ class VendaProduto {
 
             const result = await db.run(
                 `UPDATE tb_venda_produto
-                SET id_local_estoque = ?,
-                    id_estoque = ?,
+                SET id_estoque = ?,
                     id_produto = ?,
                     nu_quantidade = ?,
                     vr_total = ?
                 WHERE id_venda = ?
                 AND id_venda_produto = ?`,
-                [id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total, this.id_venda, this.id_venda_produto]
+                [id_estoque, id_produto, nu_quantidade, vr_total, this.id_venda, this.id_venda_produto]
             );
 
             if (result) {
-                this.id_local_estoque = id_local_estoque;
                 this.id_estoque = id_estoque;
                 this.id_produto = id_produto;
                 this.nu_quantidade = nu_quantidade;

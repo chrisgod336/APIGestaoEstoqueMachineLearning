@@ -16,24 +16,23 @@ const EstoqueModel_1 = __importDefault(require("../../models/Estoque/EstoqueMode
 class EstoqueController {
     static criarEstoque(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica } = req.body;
-            const result = yield EstoqueModel_1.default.criarEstoque(id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica);
+            const { id_produto, nu_quantidade } = req.body;
+            const result = yield EstoqueModel_1.default.criarEstoque(id_produto, nu_quantidade);
             res.status(result.result === "success" ? 201 : 400).json(result);
         });
     }
     static buscarEstoque(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_local_estoque, id_estoque } = req.query;
-            const result = yield EstoqueModel_1.default.buscarEstoque(Number(id_local_estoque), id_estoque ? Number(id_estoque) : undefined);
+            const { id_estoque } = req.query;
+            const result = yield EstoqueModel_1.default.buscarEstoque(id_estoque ? Number(id_estoque) : undefined);
             res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }
     static atualizarEstoque(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_estoque } = req.body;
-            const { id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica } = req.body;
+            const { id_estoque, id_produto, nu_quantidade } = req.body;
             const estoque = new EstoqueModel_1.default(Number(id_estoque));
-            const result = yield estoque.atualizarEstoque(id_local_estoque, id_produto, nu_quantidade, nu_quantidade_minima, nu_quantidade_maxima, lo_reposicao_automatica);
+            const result = yield estoque.atualizarEstoque(id_produto, nu_quantidade);
             res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }
@@ -45,17 +44,10 @@ class EstoqueController {
             res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }
-    static atualizarEstoquesLote(req, res) {
+    static countProduto(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { estoques } = req.body;
-            const result = yield EstoqueModel_1.default.atualizarEstoquesLote(estoques);
-            res.status(result.result === "success" ? 200 : 400).json(result);
-        });
-    }
-    static movimentarEstoque(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { id_local_estoque_ori, id_local_estoque_dest, id_produto, nu_quantidade_mov } = req.body;
-            const result = yield EstoqueModel_1.default.movimentarEstoque(id_local_estoque_ori, id_local_estoque_dest, id_produto, nu_quantidade_mov);
+            const { id_produto } = req.query;
+            const result = yield EstoqueModel_1.default.countProduto(Number(id_produto));
             res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }

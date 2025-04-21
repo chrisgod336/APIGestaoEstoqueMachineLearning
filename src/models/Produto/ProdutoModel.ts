@@ -97,7 +97,11 @@ class Produto {
                 sql = `SELECT * FROM tb_produto WHERE id_produto = ?`;
                 params = [id_produto];
             } else {
-                sql = `SELECT * FROM tb_produto ORDER BY id_produto`;
+                sql = `SELECT tb_produto.*, tb_fornecedor.id_fornecedor||' - '||tb_fornecedor.tx_razao_social AS fornecedor
+                       FROM tb_produto
+                       INNER JOIN tb_fornecedor
+                       ON tb_produto.id_fornecedor = tb_fornecedor.id_fornecedor 
+                       ORDER BY id_produto`;
             }
 
             const response = await db.all(sql, params);
@@ -178,46 +182,6 @@ class Produto {
             return {
                 result: 'error',
                 message: error?.message ?? 'Erro ao tentar deletar produto.'
-            };
-        }
-    }
-
-    public static async criarProdutosLote(produtos: Array<{
-        id_fornecedor: number,
-        tx_nome: string, 
-        tx_marca: string, 
-        vr_preco_compra: number, 
-        vr_preco_venda: number
-    }>): Promise<object> {
-        try {
-            await db.run('BEGIN TRANSACTION');
-            
-            const results = [];
-            for (const produto of produtos) {
-                const result = await db.run(
-                    `INSERT INTO tb_produto(
-                        id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda
-                    ) VALUES (?, ?, ?, ?, ?)`,
-                    [
-                        produto.id_fornecedor, produto.tx_nome, produto.tx_marca,
-                        produto.vr_preco_compra, produto.vr_preco_venda
-                    ]
-                );
-                results.push(result.lastID);
-            }
-            
-            await db.run('COMMIT');
-            
-            return {
-                result: 'success',
-                message: `${produtos.length} produtos criados com sucesso.`,
-                data: results
-            };
-        } catch (error: any) {
-            await db.run('ROLLBACK');
-            return {
-                result: 'error',
-                message: error?.message ?? 'Erro ao criar produtos em lote.'
             };
         }
     }

@@ -48,13 +48,5 @@ class ClienteController {
             return res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }
-    // Criar clientes em lote
-    static criarLote(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { clientes } = req.body;
-            const result = yield ClienteModel_1.default.criarClienteLote(clientes);
-            return res.status(result.result === "success" ? 201 : 400).json(result);
-        });
-    }
 }
 exports.default = ClienteController;

@@ -169,45 +169,6 @@ class Cliente {
             };
         }
     }
-
-    public static async criarClienteLote(clientes: Array<{ 
-        tx_nome: string, 
-        tx_cpf_cnpj: string, 
-        tx_email: string, 
-        tx_telefone: string
-    }>): Promise<object> {
-        try {
-            await db.run('BEGIN TRANSACTION');
-            
-            const results = [];
-            for (const cliente of clientes) {
-                const result = await db.run(
-                    `INSERT INTO tb_cliente(
-                        tx_nome, tx_cpf_cnpj, tx_email, tx_telefone
-                    ) VALUES (?, ?, ?, ?)`,
-                    [
-                        cliente.tx_nome, cliente.tx_cpf_cnpj, 
-                        cliente.tx_email, cliente.tx_telefone
-                    ]
-                );
-                results.push(result.lastID);
-            }
-            
-            await db.run('COMMIT');
-            
-            return {
-                result: 'success',
-                message: `${clientes.length} clientes criados com sucesso.`,
-                data: results
-            };
-        } catch (error: any) {
-            await db.run('ROLLBACK');
-            return {
-                result: 'error',
-                message: error?.message ?? 'Erro ao criar clientes em lote.'
-            };
-        }
-    }
 }
 
 export default Cliente;

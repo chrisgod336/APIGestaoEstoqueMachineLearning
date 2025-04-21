@@ -77,7 +77,11 @@ class Produto {
                     params = [id_produto];
                 }
                 else {
-                    sql = `SELECT * FROM tb_produto ORDER BY id_produto`;
+                    sql = `SELECT tb_produto.*, tb_fornecedor.id_fornecedor||' - '||tb_fornecedor.tx_razao_social AS fornecedor
+                       FROM tb_produto
+                       INNER JOIN tb_fornecedor
+                       ON tb_produto.id_fornecedor = tb_fornecedor.id_fornecedor 
+                       ORDER BY id_produto`;
                 }
                 const response = yield app_1.db.all(sql, params);
                 return {
@@ -150,37 +154,6 @@ class Produto {
                 return {
                     result: 'error',
                     message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : 'Erro ao tentar deletar produto.'
-                };
-            }
-        });
-    }
-    static criarProdutosLote(produtos) {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            try {
-                yield app_1.db.run('BEGIN TRANSACTION');
-                const results = [];
-                for (const produto of produtos) {
-                    const result = yield app_1.db.run(`INSERT INTO tb_produto(
-                        id_fornecedor, tx_nome, tx_marca, vr_preco_compra, vr_preco_venda
-                    ) VALUES (?, ?, ?, ?, ?)`, [
-                        produto.id_fornecedor, produto.tx_nome, produto.tx_marca,
-                        produto.vr_preco_compra, produto.vr_preco_venda
-                    ]);
-                    results.push(result.lastID);
-                }
-                yield app_1.db.run('COMMIT');
-                return {
-                    result: 'success',
-                    message: `${produtos.length} produtos criados com sucesso.`,
-                    data: results
-                };
-            }
-            catch (error) {
-                yield app_1.db.run('ROLLBACK');
-                return {
-                    result: 'error',
-                    message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : 'Erro ao criar produtos em lote.'
                 };
             }
         });

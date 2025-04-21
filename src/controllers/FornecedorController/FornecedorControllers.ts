@@ -10,13 +10,7 @@ class FornecedorController {
       tx_cpf_cnpj,
       tx_email,
       tx_telefone,
-      vr_frete,
-      nu_dias_previsao_inicial_entrega,
-      nu_dias_previsao_final_entrega,
-      tx_pais,
-      tx_uf,
-      tx_cidade,
-      tx_endereco
+      vr_frete
     } = req.body;
 
     const result: any = await Fornecedor.criarFornecedor(
@@ -24,13 +18,7 @@ class FornecedorController {
       tx_cpf_cnpj,
       tx_email,
       tx_telefone,
-      vr_frete,
-      nu_dias_previsao_inicial_entrega,
-      nu_dias_previsao_final_entrega,
-      tx_pais,
-      tx_uf,
-      tx_cidade,
-      tx_endereco
+      vr_frete
     );
 
     return res.status(result.result === "success" ? 201 : 400).json(result);
@@ -46,10 +34,10 @@ class FornecedorController {
 
   // Atualizar fornecedor
   static async atualizar(req: Request, res: Response) {
-    const { id_fornecedor, tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco } = req.body;
+    const { id_fornecedor, tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete} = req.body;
 
     const fornecedor = new Fornecedor(Number(id_fornecedor));
-    const result: any = await fornecedor.atualizarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco);
+    const result: any = await fornecedor.atualizarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete);
     
     return res.status(result.result === "success" ? 200 : 400).json(result);
   }
@@ -64,13 +52,6 @@ class FornecedorController {
     return res.status(result.result === "success" ? 200 : 400).json(result);
   }
 
-  // Criar fornecedores em lote
-  static async criarLote(req: Request, res: Response) {
-    const { fornecedores } = req.body;
-    const result: any = await Fornecedor.criarFornecedoresLote(fornecedores);
-    
-    return res.status(result.result === "success" ? 201 : 400).json(result);
-  }
 }
 
 export default FornecedorController;

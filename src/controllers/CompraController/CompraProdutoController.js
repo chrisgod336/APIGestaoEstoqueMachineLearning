@@ -17,8 +17,8 @@ class CompraProdutoController {
     static criar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade } = req.body;
-                const result = yield CompraProdutoModel_1.default.criarCompraProduto(id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade);
+                const { id_compra, id_estoque, id_produto, nu_quantidade } = req.body;
+                const result = yield CompraProdutoModel_1.default.criarCompraProduto(id_compra, id_estoque, id_produto, nu_quantidade);
                 return res.status(result.result === 'success' ? 201 : 400).json(result);
             }
             catch (error) {
@@ -41,9 +41,9 @@ class CompraProdutoController {
     static atualizar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { id_compra, id_compra_produto, id_local_estoque, id_estoque, id_produto, nu_quantidade } = req.body;
-                const compraProduto = new CompraProdutoModel_1.default(Number(id_compra_produto), id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade);
-                const result = yield compraProduto.atualizarCompraProduto(id_local_estoque, id_estoque, id_produto, nu_quantidade);
+                const { id_compra, id_compra_produto, id_estoque, id_produto, nu_quantidade } = req.body;
+                const compraProduto = new CompraProdutoModel_1.default(Number(id_compra_produto), id_compra, id_estoque, id_produto, nu_quantidade);
+                const result = yield compraProduto.atualizarCompraProduto(id_estoque, id_produto, nu_quantidade);
                 return res.status(result.result === 'success' ? 200 : 400).json(result);
             }
             catch (error) {

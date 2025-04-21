@@ -3,24 +3,18 @@ import { db } from "../../../app";
 class Compra {
     private id_compra: number;
     private id_fornecedor: number;
-    private id_local_estoque: number;
     private dt_compra: string;
     private vr_total_compra: number;
     private vr_compra: number;
     private vr_frete: number;
     private tx_status: string;
-    private dt_previsao_entrega_inicial: string;
-    private dt_previsao_entrega_final: string;
     private dt_entrega: string;
 
     constructor(
         id_compra: number,
         id_fornecedor: number,
-        id_local_estoque: number,
         dt_compra?: string,
         tx_status?: string,
-        dt_previsao_entrega_inicial?: string,
-        dt_previsao_entrega_final?: string,
         vr_total_compra?: number,
         vr_compra?: number,
         vr_frete?: number,
@@ -28,14 +22,11 @@ class Compra {
     ) {
         this.id_compra = id_compra;
         this.id_fornecedor = id_fornecedor;
-        this.id_local_estoque = id_local_estoque;
         this.dt_compra = dt_compra ?? "";
         this.vr_total_compra = vr_total_compra ?? 0;
         this.vr_compra = vr_compra ?? 0;
         this.vr_frete = vr_frete ?? 0;
-        this.tx_status = tx_status ?? "PENDENTE";
-        this.dt_previsao_entrega_inicial = dt_previsao_entrega_inicial ?? "";
-        this.dt_previsao_entrega_final = dt_previsao_entrega_final ?? "";
+        this.tx_status = tx_status ?? "ABERTA";
         this.dt_entrega = dt_entrega ?? "";
     }
 
@@ -45,10 +36,6 @@ class Compra {
 
     public getIdFornecedor(): number {
         return this.id_fornecedor;
-    }
-
-    public getIdLocalEstoque(): number {
-        return this.id_local_estoque;
     }
 
     public getDtCompra(): string {
@@ -71,85 +58,24 @@ class Compra {
         return this.tx_status;
     }
 
-    public getDtPrevisaoEntregaInicial(): string {
-        return this.dt_previsao_entrega_inicial;
-    }
-
-    public getDtPrevisaoEntregaFinal(): string {
-        return this.dt_previsao_entrega_final;
-    }
-
     public getDtEntrega(): string {
         return this.dt_entrega;
     }
 
-    public static async calcularPeriodoEntrega(id_fornecedor: number, dt_compra: string): Promise<object> {
-        try {
-            const response = await db.get(
-                'SELECT nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega FROM tb_fornecedor WHERE id_fornecedor = ?',
-                [id_fornecedor]
-            );
-
-            if (!response) {
-                return {
-                    result: 'error',
-                    message: 'Fornecedor não encontrado'
-                };
-            }
-
-            const dias_inc = response.nu_dias_previsao_inicial_entrega;
-            const dias_fim = response.nu_dias_previsao_final_entrega;
-
-            const dataCompra = new Date(dt_compra);
-            if (isNaN(dataCompra.getTime())) {
-                return {
-                    result: 'error',
-                    message: 'Data de compra inválida'
-                };
-            }
-
-            const previsaoInicial = new Date(dataCompra);
-            previsaoInicial.setDate(previsaoInicial.getDate() + dias_inc);
-
-            const previsaoFinal = new Date(dataCompra);
-            previsaoFinal.setDate(previsaoFinal.getDate() + dias_fim);
-
-            return {
-                result: 'success',
-                previsao_inicial: previsaoInicial.toISOString().split('T')[0],
-                previsao_final: previsaoFinal.toISOString().split('T')[0]
-            };
-        } catch (error: any) {
-            return {
-                result: 'error',
-                message: error?.message ?? 'Erro ao calcular período de entrega'
-            };
-        }
-    }
-
     public static async criarCompra(
         id_fornecedor: number,
-        id_local_estoque: number,
         dt_compra?: string
     ): Promise<object> {
         try {
             const dataCompra = dt_compra ?? new Date().toISOString();
-            const periodo_entrega:any = await this.calcularPeriodoEntrega(id_fornecedor, dataCompra);
-
-            const { previsao_inicial, previsao_final } = periodo_entrega;
 
             const result = await db.run(
                 `INSERT INTO tb_compra(
-                    id_fornecedor, id_local_estoque, dt_compra, 
-                    tx_status, dt_previsao_entrega_inicial, dt_previsao_entrega_final, vr_total_compra, vr_compra, vr_frete
-                ) VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0)`,
+                    id_fornecedor, dt_compra
+                ) VALUES (?, ?, ?, ?, ?)`,
                 [
-                    id_fornecedor, 
-                    id_local_estoque, 
-                    dataCompra, 
-                    'PENDENTE', 
-                    previsao_inicial, 
-                    previsao_final
+                    id_fornecedor,  
+                    dataCompra
                 ]
             );
 
@@ -159,12 +85,7 @@ class Compra {
                     message: 'Compra criada com sucesso',
                     data: new Compra(
                         result.lastID,
-                        id_fornecedor,
-                        id_local_estoque,
-                        dataCompra,
-                        'PENDENTE',
-                        previsao_inicial,
-                        previsao_final
+                        id_fornecedor
                     )
                 };
             }
@@ -208,46 +129,33 @@ class Compra {
 
     public async atualizarCompra(
         id_fornecedor: number,
-        id_local_estoque: number,
         dt_compra: string,
         vr_frete: number
     ): Promise<object> {
         try {
-            const periodo_entrega:any = await Compra.calcularPeriodoEntrega(id_fornecedor, dt_compra);
-
-            const { previsao_inicial, previsao_final } = periodo_entrega;
             const vr_total_compra = this.vr_compra + vr_frete;
 
             const result = await db.run(
                 `UPDATE tb_compra
                 SET id_fornecedor = ?,
-                    id_local_estoque = ?,
                     dt_compra = ?,
                     vr_total_compra = ?,
                     vr_frete = ?,
-                    dt_previsao_entrega_inicial = ?,
-                    dt_previsao_entrega_final = ?
                 WHERE id_compra = ?`,
                 [
                     id_fornecedor,
-                    id_local_estoque,
                     dt_compra,
                     vr_total_compra,
                     vr_frete,
-                    previsao_inicial,
-                    previsao_final,
                     this.id_compra
                 ]
             );
 
             if (result) {
                 this.id_fornecedor = id_fornecedor;
-                this.id_local_estoque = id_local_estoque;
                 this.dt_compra = dt_compra;
                 this.vr_total_compra = vr_total_compra;
                 this.vr_frete = vr_frete;
-                this.dt_previsao_entrega_inicial = previsao_inicial;
-                this.dt_previsao_entrega_final = previsao_final;
 
                 return {
                     result: 'success',

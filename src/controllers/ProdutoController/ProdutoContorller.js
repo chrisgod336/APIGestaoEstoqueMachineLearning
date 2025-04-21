@@ -50,15 +50,5 @@ class ProdutoController {
             return res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }
-    static criarLote(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { produtos } = req.body;
-            if (!Array.isArray(produtos) || produtos.length === 0) {
-                return res.status(400).json({ result: "error", message: "Lista de produtos inválida." });
-            }
-            const result = yield ProdutoModel_1.default.criarProdutosLote(produtos);
-            return res.status(result.result === "success" ? 201 : 400).json(result);
-        });
-    }
 }
 exports.default = ProdutoController;

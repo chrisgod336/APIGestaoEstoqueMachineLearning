@@ -10,7 +10,6 @@ router.post("/criar", asyncHandler(EstoqueController.criarEstoque));
 router.get("/buscar", asyncHandler(EstoqueController.buscarEstoque));
 router.put("/atualizar", asyncHandler(EstoqueController.atualizarEstoque));
 router.delete("/deletar", asyncHandler(EstoqueController.deletarEstoque));
-router.post("/atualizarLote", asyncHandler(EstoqueController.atualizarEstoquesLote));
-router.post("/movimentar", asyncHandler(EstoqueController.movimentarEstoque));
+router.get("/countProduto", asyncHandler(EstoqueController.countProduto))
 
 export default router;

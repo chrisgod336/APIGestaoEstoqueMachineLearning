@@ -11,5 +11,4 @@ router.post("/criar", asyncHandler(ProdutoContorller_1.default.criar));
 router.get("/buscar", asyncHandler(ProdutoContorller_1.default.buscar));
 router.put("/atualizar", asyncHandler(ProdutoContorller_1.default.atualizar));
 router.delete("/deletar", asyncHandler(ProdutoContorller_1.default.deletar));
-router.post("/criarLote", asyncHandler(ProdutoContorller_1.default.criarLote));
 exports.default = router;

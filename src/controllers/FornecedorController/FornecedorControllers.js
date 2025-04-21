@@ -17,8 +17,8 @@ class FornecedorController {
     // Criar fornecedor
     static criar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco } = req.body;
-            const result = yield FornecedorModel_1.default.criarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco);
+            const { tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete } = req.body;
+            const result = yield FornecedorModel_1.default.criarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete);
             return res.status(result.result === "success" ? 201 : 400).json(result);
         });
     }
@@ -33,9 +33,9 @@ class FornecedorController {
     // Atualizar fornecedor
     static atualizar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_fornecedor, tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco } = req.body;
+            const { id_fornecedor, tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete } = req.body;
             const fornecedor = new FornecedorModel_1.default(Number(id_fornecedor));
-            const result = yield fornecedor.atualizarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, tx_pais, tx_uf, tx_cidade, tx_endereco);
+            const result = yield fornecedor.atualizarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete);
             return res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }
@@ -46,14 +46,6 @@ class FornecedorController {
             const fornecedor = new FornecedorModel_1.default(Number(id_fornecedor));
             const result = yield fornecedor.deletarFornecedor();
             return res.status(result.result === "success" ? 200 : 400).json(result);
-        });
-    }
-    // Criar fornecedores em lote
-    static criarLote(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { fornecedores } = req.body;
-            const result = yield FornecedorModel_1.default.criarFornecedoresLote(fornecedores);
-            return res.status(result.result === "success" ? 201 : 400).json(result);
         });
     }
 }

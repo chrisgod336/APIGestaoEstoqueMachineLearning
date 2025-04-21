@@ -7,11 +7,9 @@ import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
 
 // Importação de rotas
-import UsuarioRoutes from './src/routes/UsuarioRoutes/UsuarioRoutes';
 import FornecedorRoutes from './src/routes/FornecedorRoutes/FornecedorRoutes';
 import ClienteRoutes from './src/routes/ClienteRoutes/ClienteRoutes';
 import ProdutoRoutes from './src/routes/ProdutoRoutes/ProdutoRoutes';
-import LocalEstoqueRoutes from './src/routes/EstoqueRoutes/LocalEstoqueRoutes';
 import EstoqueRoutes from './src/routes/EstoqueRoutes/EstoqueRoutes';
 import VendaRoutes from './src/routes/VendaRoutes/VendaRoutes';
 import VendaProdutoRoutes from './src/routes/VendaRoutes/VendaProdutoRoutes';
@@ -68,11 +66,9 @@ app.get('/', (req, res) => {
 });
 
 // Configuração das rotas
-app.use("/usuario", UsuarioRoutes);
 app.use("/fornecedor", FornecedorRoutes);
 app.use("/cliente", ClienteRoutes);
 app.use("/produto", ProdutoRoutes);
-app.use("/localEstoque", LocalEstoqueRoutes);
 app.use("/estoque", EstoqueRoutes);
 app.use("/venda", VendaRoutes);
 app.use("/vendaProduto", VendaProdutoRoutes);

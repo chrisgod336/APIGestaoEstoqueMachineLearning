@@ -7,13 +7,6 @@ class Fornecedor {
     private tx_email: string;
     private tx_telefone: string;
     private vr_frete: number;
-    private nu_dias_previsao_inicial_entrega: number;
-    private nu_dias_previsao_final_entrega: number;
-    private tx_pais: string;
-    private tx_uf: string;
-    private tx_cidade: string;
-    private tx_endereco: string;
-
     constructor(
         id_fornecedor: number,
         tx_razao_social?: string,
@@ -21,12 +14,6 @@ class Fornecedor {
         tx_email?: string,
         tx_telefone?: string,
         vr_frete?: number,
-        nu_dias_previsao_inicial_entrega?: number,
-        nu_dias_previsao_final_entrega?: number,
-        tx_pais?: string,
-        tx_uf?: string,
-        tx_cidade?: string,
-        tx_endereco?: string
     ) {
         this.id_fornecedor = id_fornecedor;
         this.tx_razao_social = tx_razao_social ?? "";
@@ -34,12 +21,6 @@ class Fornecedor {
         this.tx_email = tx_email ?? "";
         this.tx_telefone = tx_telefone ?? "";
         this.vr_frete = vr_frete ?? 0;
-        this.nu_dias_previsao_inicial_entrega = nu_dias_previsao_inicial_entrega ?? 0;
-        this.nu_dias_previsao_final_entrega = nu_dias_previsao_final_entrega ?? 0;
-        this.tx_pais = tx_pais ?? "";
-        this.tx_uf = tx_uf ?? "";
-        this.tx_cidade = tx_cidade ?? "";
-        this.tx_endereco = tx_endereco ?? "";
     }
     public getIdFornecedor(): number {
         return this.id_fornecedor;
@@ -65,57 +46,21 @@ class Fornecedor {
         return this.vr_frete;
     }
 
-    public getNuDiasPrevisaoInicialEntrega(): number {
-        return this.nu_dias_previsao_inicial_entrega;
-    }
-
-    public getNuDiasPrevisaoFinalEntrega(): number {
-        return this.nu_dias_previsao_final_entrega;
-    }
-
-    public getTxPais(): string {
-        return this.tx_pais;
-    }
-
-    public getTxUf(): string {
-        return this.tx_uf;
-    }
-
-    public getTxCidade(): string {
-        return this.tx_cidade;
-    }
-
-    public getTxEndereco(): string {
-        return this.tx_endereco;
-    }
-
     public static async criarFornecedor(
         tx_razao_social: string, 
         tx_cpf_cnpj: string, 
         tx_email: string, 
         tx_telefone: string, 
-        vr_frete: number, 
-        nu_dias_previsao_inicial_entrega: number, 
-        nu_dias_previsao_final_entrega: number, 
-        tx_pais: string, 
-        tx_uf: string, 
-        tx_cidade: string, 
-        tx_endereco: string
+        vr_frete: number
     ): Promise<object> {
         try {
             const sql_insert = `
                 INSERT INTO tb_fornecedor(
-                    tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, 
-                    vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, 
-                    tx_pais, tx_uf, tx_cidade, tx_endereco
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete
+                ) VALUES (?, ?, ?, ?, ?)
             `;
 
-            const result = await db.run(sql_insert, [
-                tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, 
-                vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, 
-                tx_pais, tx_uf, tx_cidade, tx_endereco
-            ]);
+            const result = await db.run(sql_insert, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete]);
 
             if (result.lastID) {
                 return {
@@ -127,13 +72,7 @@ class Fornecedor {
                         tx_cpf_cnpj, 
                         tx_email, 
                         tx_telefone, 
-                        vr_frete, 
-                        nu_dias_previsao_inicial_entrega, 
-                        nu_dias_previsao_final_entrega, 
-                        tx_pais, 
-                        tx_uf, 
-                        tx_cidade, 
-                        tx_endereco
+                        vr_frete
                     )
                 };
             }
@@ -180,13 +119,7 @@ class Fornecedor {
         tx_cpf_cnpj: string, 
         tx_email: string, 
         tx_telefone: string, 
-        vr_frete: number, 
-        nu_dias_previsao_inicial_entrega: number, 
-        nu_dias_previsao_final_entrega: number, 
-        tx_pais: string, 
-        tx_uf: string, 
-        tx_cidade: string, 
-        tx_endereco: string
+        vr_frete: number
     ): Promise<object> {
         try {
             const sql_update = `
@@ -195,29 +128,14 @@ class Fornecedor {
                     tx_cpf_cnpj = ?,
                     tx_email = ?,
                     tx_telefone = ?,
-                    vr_frete = ?,
-                    nu_dias_previsao_inicial_entrega = ?,
-                    nu_dias_previsao_final_entrega = ?,
-                    tx_pais = ?,
-                    tx_uf = ?,
-                    tx_cidade = ?,
-                    tx_endereco = ?
+                    vr_frete = ?
                 WHERE id_fornecedor = ?
             `;
 
-            const result = await db.run(sql_update, [
-                tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, 
-                vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, 
-                tx_pais, tx_uf, tx_cidade, tx_endereco, 
-                this.id_fornecedor
-            ]);
+            const result = await db.run(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, this.id_fornecedor]);
 
             if (result) {
-                Object.assign(this, {
-                    tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, 
-                    vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, 
-                    tx_pais, tx_uf, tx_cidade, tx_endereco
-                });
+                Object.assign(this, {tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete});
                 
                 return {
                     result: 'success',
@@ -253,56 +171,7 @@ class Fornecedor {
             };
         }
     }
-
-    public static async criarFornecedoresLote(fornecedores: Array<{ 
-        tx_razao_social: string, 
-        tx_cpf_cnpj: string, 
-        tx_email: string, 
-        tx_telefone: string, 
-        vr_frete: number, 
-        nu_dias_previsao_inicial_entrega: number, 
-        nu_dias_previsao_final_entrega: number, 
-        tx_pais: string, 
-        tx_uf: string, 
-        tx_cidade: string, 
-        tx_endereco: string 
-    }>): Promise<object> {
-        try {
-            // Inicia uma transação para melhor performance
-            await db.run('BEGIN TRANSACTION');
-            
-            const results = [];
-            for (const fornecedor of fornecedores) {
-                const result = await db.run(
-                    `INSERT INTO tb_fornecedor(
-                        tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, 
-                        vr_frete, nu_dias_previsao_inicial_entrega, nu_dias_previsao_final_entrega, 
-                        tx_pais, tx_uf, tx_cidade, tx_endereco
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [
-                        fornecedor.tx_razao_social, fornecedor.tx_cpf_cnpj, fornecedor.tx_email, fornecedor.tx_telefone,
-                        fornecedor.vr_frete, fornecedor.nu_dias_previsao_inicial_entrega, fornecedor.nu_dias_previsao_final_entrega,
-                        fornecedor.tx_pais, fornecedor.tx_uf, fornecedor.tx_cidade, fornecedor.tx_endereco
-                    ]
-                );
-                results.push(result.lastID);
-            }
-            
-            await db.run('COMMIT');
-            
-            return {
-                result: 'success',
-                message: `${fornecedores.length} fornecedores criados com sucesso.`,
-                data: results
-            };
-        } catch (error: any) {
-            await db.run('ROLLBACK');
-            return {
-                result: 'error',
-                message: error?.message ?? 'Erro ao criar fornecedores em lote.'
-            };
-        }
-    }
+    
 }
 
 export default Fornecedor;

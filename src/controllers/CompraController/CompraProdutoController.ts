@@ -5,8 +5,8 @@ class CompraProdutoController {
     
     static async criar(req: Request, res: Response) {
         try {
-            const { id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade } = req.body;
-            const result:any = await CompraProduto.criarCompraProduto(id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade);
+            const { id_compra, id_estoque, id_produto, nu_quantidade } = req.body;
+            const result:any = await CompraProduto.criarCompraProduto(id_compra, id_estoque, id_produto, nu_quantidade);
             return res.status(result.result === 'success' ? 201 : 400).json(result);
         } catch (error: any) {
             return res.status(500).json({ result: 'error', message: error.message || 'Erro ao criar compra produto.' });
@@ -25,10 +25,10 @@ class CompraProdutoController {
 
     static async atualizar(req: Request, res: Response) {
         try {
-            const { id_compra, id_compra_produto, id_local_estoque, id_estoque, id_produto, nu_quantidade } = req.body;
+            const { id_compra, id_compra_produto, id_estoque, id_produto, nu_quantidade } = req.body;
             
-            const compraProduto = new CompraProduto(Number(id_compra_produto), id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade);
-            const result:any = await compraProduto.atualizarCompraProduto(id_local_estoque, id_estoque, id_produto, nu_quantidade);
+            const compraProduto = new CompraProduto(Number(id_compra_produto), id_compra, id_estoque, id_produto, nu_quantidade);
+            const result:any = await compraProduto.atualizarCompraProduto (id_estoque, id_produto, nu_quantidade);
             
             return res.status(result.result === 'success' ? 200 : 400).json(result);
         } catch (error: any) {

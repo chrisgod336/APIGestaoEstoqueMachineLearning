@@ -15,6 +15,4 @@ router.get("/buscar", asyncHandler(ClienteController_1.default.buscar));
 router.put("/atualizar", asyncHandler(ClienteController_1.default.atualizar));
 // Deletar um cliente
 router.delete("/deletar", asyncHandler(ClienteController_1.default.deletar));
-// Criar clientes em lote
-router.post("/criarLote", asyncHandler(ClienteController_1.default.criarLote));
 exports.default = router;

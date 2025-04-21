@@ -4,8 +4,8 @@ import VendaProduto from "../../models/Venda/VendaProdutoModel";
 class VendaProdutoController {
     static async criar(req: Request, res: Response) {
         try {
-            const { id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade} = req.body;
-            const resultado = await VendaProduto.criarVendaProduto(id_venda, id_local_estoque, id_estoque, id_produto, nu_quantidade);
+            const { id_venda, id_estoque, id_produto, nu_quantidade} = req.body;
+            const resultado = await VendaProduto.criarVendaProduto(id_venda, id_estoque, id_produto, nu_quantidade);
             res.status(201).json(resultado);
         } catch (error: any) {
             res.status(500).json({ result: "error", message: error.message });
@@ -24,9 +24,9 @@ class VendaProdutoController {
 
     static async atualizar(req: Request, res: Response) {
         try {
-            const { id_venda, id_venda_produto, id_local_estoque, id_estoque, id_produto, nu_quantidade} = req.body;
+            const { id_venda, id_venda_produto,  id_estoque, id_produto, nu_quantidade} = req.body;
             const vendaProduto = new VendaProduto(Number(id_venda_produto), id_venda, 0, 0, 0); 
-            const resultado = await vendaProduto.atualizarVendaProduto(id_local_estoque, id_estoque, id_produto, nu_quantidade);
+            const resultado = await vendaProduto.atualizarVendaProduto( id_estoque, id_produto, nu_quantidade);
             res.status(200).json(resultado);
         } catch (error: any) {
             res.status(500).json({ result: "error", message: error.message });

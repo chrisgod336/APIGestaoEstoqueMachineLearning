@@ -21,11 +21,9 @@ const fs_1 = __importDefault(require("fs"));
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const sqlite_1 = require("sqlite");
 // Importação de rotas
-const UsuarioRoutes_1 = __importDefault(require("./src/routes/UsuarioRoutes/UsuarioRoutes"));
 const FornecedorRoutes_1 = __importDefault(require("./src/routes/FornecedorRoutes/FornecedorRoutes"));
 const ClienteRoutes_1 = __importDefault(require("./src/routes/ClienteRoutes/ClienteRoutes"));
 const ProdutoRoutes_1 = __importDefault(require("./src/routes/ProdutoRoutes/ProdutoRoutes"));
-const LocalEstoqueRoutes_1 = __importDefault(require("./src/routes/EstoqueRoutes/LocalEstoqueRoutes"));
 const EstoqueRoutes_1 = __importDefault(require("./src/routes/EstoqueRoutes/EstoqueRoutes"));
 const VendaRoutes_1 = __importDefault(require("./src/routes/VendaRoutes/VendaRoutes"));
 const VendaProdutoRoutes_1 = __importDefault(require("./src/routes/VendaRoutes/VendaProdutoRoutes"));
@@ -72,11 +70,9 @@ app.get('/', (req, res) => {
     res.send('API com SQLite está rodando 🚀');
 });
 // Configuração das rotas
-app.use("/usuario", UsuarioRoutes_1.default);
 app.use("/fornecedor", FornecedorRoutes_1.default);
 app.use("/cliente", ClienteRoutes_1.default);
 app.use("/produto", ProdutoRoutes_1.default);
-app.use("/localEstoque", LocalEstoqueRoutes_1.default);
 app.use("/estoque", EstoqueRoutes_1.default);
 app.use("/venda", VendaRoutes_1.default);
 app.use("/vendaProduto", VendaProdutoRoutes_1.default);

@@ -35,12 +35,6 @@ class ClienteController {
     return res.status(result.result === "success" ? 200 : 400).json(result);
   }
 
-  // Criar clientes em lote
-  static async criarLote(req: Request, res: Response) {
-    const { clientes } = req.body;
-    const result: any = await Cliente.criarClienteLote(clientes);
-    return res.status(result.result === "success" ? 201 : 400).json(result);
-  }
 }
 
 export default ClienteController;

@@ -10,6 +10,5 @@ router.post("/criar", asyncHandler(ProdutoController.criar));
 router.get("/buscar", asyncHandler(ProdutoController.buscar));
 router.put("/atualizar", asyncHandler(ProdutoController.atualizar));
 router.delete("/deletar", asyncHandler(ProdutoController.deletar));
-router.post("/criarLote", asyncHandler(ProdutoController.criarLote));
 
 export default router;

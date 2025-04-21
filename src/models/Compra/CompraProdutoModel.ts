@@ -3,7 +3,6 @@ import { db } from "../../../app";
 class CompraProduto {
     private id_compra_produto: number;
     private id_compra: number;
-    private id_local_estoque: number;
     private id_estoque: number;
     private id_produto: number;
     private nu_quantidade: number;
@@ -12,7 +11,6 @@ class CompraProduto {
     constructor(
         id_compra_produto: number,
         id_compra: number,
-        id_local_estoque: number,
         id_estoque: number,
         id_produto: number,
         nu_quantidade?: number,
@@ -20,7 +18,6 @@ class CompraProduto {
     ) {
         this.id_compra_produto = id_compra_produto;
         this.id_compra = id_compra;
-        this.id_local_estoque = id_local_estoque;
         this.id_estoque = id_estoque;
         this.id_produto = id_produto;
         this.nu_quantidade = nu_quantidade ?? 0;
@@ -37,10 +34,6 @@ class CompraProduto {
 
     public getIdProduto(): number {
         return this.id_produto;
-    }
-
-    public getIdLocalEstoque(): number {
-        return this.id_local_estoque;
     }
 
     public getIdEstoque(): number {
@@ -113,7 +106,6 @@ class CompraProduto {
 
     public static async criarCompraProduto(
         id_compra: number,
-        id_local_estoque: number,
         id_estoque: number,
         id_produto: number,
         nu_quantidade: number
@@ -128,9 +120,9 @@ class CompraProduto {
 
             const result = await db.run(
                 `INSERT INTO tb_compra_produto(
-                    id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total
-                ) VALUES (?, ?, ?, ?, ?, ?)`,
-                [id_compra, id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total]
+                    id_compra, id_estoque, id_produto, nu_quantidade, vr_total
+                ) VALUES (?, ?, ?, ?, ?)`,
+                [id_compra, id_estoque, id_produto, nu_quantidade, vr_total]
             );
 
             if (result.lastID) {
@@ -145,7 +137,6 @@ class CompraProduto {
                     data: new CompraProduto(
                         result.lastID,
                         id_compra,
-                        id_local_estoque,
                         id_estoque,
                         id_produto,
                         nu_quantidade,
@@ -193,7 +184,6 @@ class CompraProduto {
     }
 
     public async atualizarCompraProduto(
-        id_local_estoque:number,
         id_estoque: number,
         id_produto: number,
         nu_quantidade: number
@@ -208,18 +198,16 @@ class CompraProduto {
 
             const result:any = await db.run(
                 `UPDATE tb_compra_produto
-                SET id_local_estoque = ?,
-                    id_estoque = ?,
+                SET id_estoque = ?,
                     id_produto = ?,
                     nu_quantidade = ?,
                     vr_total = ?
                 WHERE id_compra = ?
                 AND id_compra_produto = ?`,
-                [id_local_estoque, id_estoque, id_produto, nu_quantidade, vr_total, this.id_compra, this.id_compra_produto]
+                [id_estoque, id_produto, nu_quantidade, vr_total, this.id_compra, this.id_compra_produto]
             );
 
             if (result.changes > 0) {
-                this.id_local_estoque = id_local_estoque;
                 this.id_estoque = id_estoque;
                 this.id_produto = id_produto;
                 this.nu_quantidade = nu_quantidade;
