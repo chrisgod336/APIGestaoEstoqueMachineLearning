@@ -71,7 +71,12 @@ class Venda {
                     params = [id_venda];
                 }
                 else {
-                    sql = `SELECT * FROM tb_venda ORDER BY id_venda`;
+                    sql = `SELECT tb_venda.*, tb_cliente.id_cliente||' - '||tb_cliente.tx_nome AS cliente 
+                        FROM tb_venda 
+                        INNER JOIN tb_cliente 
+                        ON tb_venda.id_cliente = tb_cliente.id_cliente
+                        ORDER BY id_venda
+                        `;
                 }
                 const response = yield app_1.db.all(sql, params);
                 return {
