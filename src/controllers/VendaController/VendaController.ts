@@ -15,14 +15,14 @@ class VendaController {
     }
 
     static async atualizar(req: Request, res: Response) {
-        const { id_venda, id_cliente, dt_venda, vr_venda } = req.body;
+        const { id_venda, id_cliente, dt_venda } = req.body;
 
         if (!id_venda) {
             return res.status(400).json({ result: "error", message: "ID da venda é obrigatório." });
         }
 
-        const venda = new Venda(id_venda, id_cliente, dt_venda, vr_venda);
-        const result: any = await venda.atualizarVenda(id_cliente, dt_venda, vr_venda);
+        const venda = new Venda(id_venda, id_cliente, dt_venda );
+        const result: any = await venda.atualizarVenda(id_cliente, dt_venda );
         return res.status(result.result === "success" ? 200 : 400).json(result);
     }
 

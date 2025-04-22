@@ -96,22 +96,20 @@ class Venda {
         }
     }
 
-    public async atualizarVenda(id_cliente: number, dt_venda: string, vr_venda: number): Promise<object> {
+    public async atualizarVenda(id_cliente: number, dt_venda: string): Promise<object> {
         try {
             const sql_update = `
                 UPDATE tb_venda
                 SET id_cliente = ?,
-                    dt_venda = ?,
-                    vr_venda = ?
+                    dt_venda = ?
                 WHERE id_venda = ?
             `;
 
-            const result = await db.run(sql_update, [id_cliente, dt_venda, vr_venda, this.id_venda]);
+            const result = await db.run(sql_update, [id_cliente, dt_venda, this.id_venda]);
 
             if (result) {
                 this.id_cliente = id_cliente;
                 this.dt_venda = dt_venda;
-                this.vr_venda = vr_venda;
                 
                 return {
                     result: 'success',
@@ -129,14 +127,20 @@ class Venda {
 
     public async deletarVenda(): Promise<object> {
         try {
+
             const result = await db.run(
+                'DELETE FROM tb_venda_produto WHERE id_venda = ?', 
+                [this.id_venda]
+            );
+
+            const result2 = await db.run(
                 'DELETE FROM tb_venda WHERE id_venda = ?', 
                 [this.id_venda]
             );
 
             return {
-                result: result ? 'success' : 'error',
-                message: result 
+                result: (result&&result2) ? 'success' : 'error',
+                message: (result&&result2) 
                     ? 'Venda deletada com sucesso' 
                     : 'Nenhuma venda foi deletada'
             };

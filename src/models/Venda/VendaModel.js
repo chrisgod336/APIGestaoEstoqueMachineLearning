@@ -90,22 +90,20 @@ class Venda {
             }
         });
     }
-    atualizarVenda(id_cliente, dt_venda, vr_venda) {
+    atualizarVenda(id_cliente, dt_venda) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
                 const sql_update = `
                 UPDATE tb_venda
                 SET id_cliente = ?,
-                    dt_venda = ?,
-                    vr_venda = ?
+                    dt_venda = ?
                 WHERE id_venda = ?
             `;
-                const result = yield app_1.db.run(sql_update, [id_cliente, dt_venda, vr_venda, this.id_venda]);
+                const result = yield app_1.db.run(sql_update, [id_cliente, dt_venda, this.id_venda]);
                 if (result) {
                     this.id_cliente = id_cliente;
                     this.dt_venda = dt_venda;
-                    this.vr_venda = vr_venda;
                     return {
                         result: 'success',
                         message: 'Venda atualizada com sucesso'
@@ -125,10 +123,11 @@ class Venda {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const result = yield app_1.db.run('DELETE FROM tb_venda WHERE id_venda = ?', [this.id_venda]);
+                const result = yield app_1.db.run('DELETE FROM tb_venda_produto WHERE id_venda = ?', [this.id_venda]);
+                const result2 = yield app_1.db.run('DELETE FROM tb_venda WHERE id_venda = ?', [this.id_venda]);
                 return {
-                    result: result ? 'success' : 'error',
-                    message: result
+                    result: (result && result2) ? 'success' : 'error',
+                    message: (result && result2)
                         ? 'Venda deletada com sucesso'
                         : 'Nenhuma venda foi deletada'
                 };

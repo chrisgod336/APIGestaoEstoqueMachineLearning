@@ -30,12 +30,12 @@ class VendaController {
     }
     static atualizar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_venda, id_cliente, dt_venda, vr_venda } = req.body;
+            const { id_venda, id_cliente, dt_venda } = req.body;
             if (!id_venda) {
                 return res.status(400).json({ result: "error", message: "ID da venda é obrigatório." });
             }
-            const venda = new VendaModel_1.default(id_venda, id_cliente, dt_venda, vr_venda);
-            const result = yield venda.atualizarVenda(id_cliente, dt_venda, vr_venda);
+            const venda = new VendaModel_1.default(id_venda, id_cliente, dt_venda);
+            const result = yield venda.atualizarVenda(id_cliente, dt_venda);
             return res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }

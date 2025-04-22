@@ -112,7 +112,7 @@ class Compra {
                 SET id_fornecedor = ?,
                     dt_compra = ?,
                     vr_total_compra = ?,
-                    vr_frete = ?,
+                    vr_frete = ?
                 WHERE id_compra = ?`, [
                     id_fornecedor,
                     dt_compra,
@@ -144,10 +144,11 @@ class Compra {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const result = yield app_1.db.run('DELETE FROM tb_compra WHERE id_compra = ?', [this.id_compra]);
+                const result = yield app_1.db.run('DELETE FROM tb_compra_produto WHERE id_compra = ?', [this.id_compra]);
+                const result2 = yield app_1.db.run('DELETE FROM tb_compra WHERE id_compra = ?', [this.id_compra]);
                 return {
-                    result: result ? 'success' : 'error',
-                    message: result
+                    result: (result && result2) ? 'success' : 'error',
+                    message: (result && result2)
                         ? 'Compra deletada com sucesso'
                         : 'Nenhuma compra foi deletada'
                 };

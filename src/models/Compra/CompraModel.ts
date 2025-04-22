@@ -140,7 +140,7 @@ class Compra {
                 SET id_fornecedor = ?,
                     dt_compra = ?,
                     vr_total_compra = ?,
-                    vr_frete = ?,
+                    vr_frete = ?
                 WHERE id_compra = ?`,
                 [
                     id_fornecedor,
@@ -173,14 +173,20 @@ class Compra {
 
     public async deletarCompra(): Promise<object> {
         try {
+
             const result = await db.run(
+                'DELETE FROM tb_compra_produto WHERE id_compra = ?',
+                [this.id_compra]
+            );
+
+            const result2 = await db.run(
                 'DELETE FROM tb_compra WHERE id_compra = ?',
                 [this.id_compra]
             );
 
             return {
-                result: result ? 'success' : 'error',
-                message: result 
+                result: (result&&result2) ? 'success' : 'error',
+                message: (result&&result2) 
                     ? 'Compra deletada com sucesso' 
                     : 'Nenhuma compra foi deletada'
             };
