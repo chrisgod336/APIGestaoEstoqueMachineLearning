@@ -50,17 +50,16 @@ class Fornecedor {
         tx_razao_social: string, 
         tx_cpf_cnpj: string, 
         tx_email: string, 
-        tx_telefone: string, 
-        vr_frete: number
+        tx_telefone: string
     ): Promise<object> {
         try {
             const sql_insert = `
                 INSERT INTO tb_fornecedor(
-                    tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete
-                ) VALUES (?, ?, ?, ?, ?)
+                    tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone
+                ) VALUES (?, ?, ?, ?)
             `;
 
-            const result = await db.run(sql_insert, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete]);
+            const result = await db.run(sql_insert, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone]);
 
             if (result.lastID) {
                 return {
@@ -71,8 +70,7 @@ class Fornecedor {
                         tx_razao_social, 
                         tx_cpf_cnpj, 
                         tx_email, 
-                        tx_telefone, 
-                        vr_frete
+                        tx_telefone
                     )
                 };
             }
@@ -119,7 +117,6 @@ class Fornecedor {
         tx_cpf_cnpj: string, 
         tx_email: string, 
         tx_telefone: string, 
-        vr_frete: number
     ): Promise<object> {
         try {
             const sql_update = `
@@ -127,15 +124,14 @@ class Fornecedor {
                 SET tx_razao_social = ?,
                     tx_cpf_cnpj = ?,
                     tx_email = ?,
-                    tx_telefone = ?,
-                    vr_frete = ?
+                    tx_telefone = ?
                 WHERE id_fornecedor = ?
             `;
 
-            const result = await db.run(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, this.id_fornecedor]);
+            const result = await db.run(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, this.id_fornecedor]);
 
             if (result) {
-                Object.assign(this, {tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete});
+                Object.assign(this, {tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone});
                 
                 return {
                     result: 'success',

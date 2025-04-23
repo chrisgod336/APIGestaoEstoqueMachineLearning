@@ -9,16 +9,14 @@ class FornecedorController {
       tx_razao_social,
       tx_cpf_cnpj,
       tx_email,
-      tx_telefone,
-      vr_frete
+      tx_telefone
     } = req.body;
 
     const result: any = await Fornecedor.criarFornecedor(
       tx_razao_social,
       tx_cpf_cnpj,
       tx_email,
-      tx_telefone,
-      vr_frete
+      tx_telefone
     );
 
     return res.status(result.result === "success" ? 201 : 400).json(result);
@@ -34,10 +32,10 @@ class FornecedorController {
 
   // Atualizar fornecedor
   static async atualizar(req: Request, res: Response) {
-    const { id_fornecedor, tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete} = req.body;
+    const { id_fornecedor, tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone } = req.body;
 
     const fornecedor = new Fornecedor(Number(id_fornecedor));
-    const result: any = await fornecedor.atualizarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete);
+    const result: any = await fornecedor.atualizarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone );
     
     return res.status(result.result === "success" ? 200 : 400).json(result);
   }

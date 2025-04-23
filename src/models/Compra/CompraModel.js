@@ -52,7 +52,7 @@ class Compra {
                 const dataCompra = dt_compra !== null && dt_compra !== void 0 ? dt_compra : new Date().toISOString();
                 const result = yield app_1.db.run(`INSERT INTO tb_compra(
                     id_fornecedor, dt_compra
-                ) VALUES (?, ?, ?, ?, ?)`, [
+                ) VALUES (?, ?)`, [
                     id_fornecedor,
                     dataCompra
                 ]);
@@ -84,7 +84,12 @@ class Compra {
                     params = [id_compra];
                 }
                 else {
-                    sql = `SELECT * FROM tb_compra ORDER BY id_compra`;
+                    sql = `SELECT tb_compra.*, 
+                        tb_fornecedor.id_fornecedor||' - '||tb_fornecedor.tx_razao_social AS fornecedor
+                        FROM tb_compra
+                        INNER JOIN tb_fornecedor
+                        ON tb_compra.id_fornecedor = tb_fornecedor.id_fornecedor
+                        ORDER BY id_compra`;
                 }
                 const response = yield app_1.db.all(sql, params);
                 return {
@@ -103,28 +108,21 @@ class Compra {
             }
         });
     }
-    atualizarCompra(id_fornecedor, dt_compra, vr_frete) {
+    atualizarCompra(id_fornecedor, dt_compra) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const vr_total_compra = this.vr_compra + vr_frete;
                 const result = yield app_1.db.run(`UPDATE tb_compra
                 SET id_fornecedor = ?,
-                    dt_compra = ?,
-                    vr_total_compra = ?,
-                    vr_frete = ?
+                    dt_compra = ?
                 WHERE id_compra = ?`, [
                     id_fornecedor,
                     dt_compra,
-                    vr_total_compra,
-                    vr_frete,
                     this.id_compra
                 ]);
                 if (result) {
                     this.id_fornecedor = id_fornecedor;
                     this.dt_compra = dt_compra;
-                    this.vr_total_compra = vr_total_compra;
-                    this.vr_frete = vr_frete;
                     return {
                         result: 'success',
                         message: 'Compra atualizada com sucesso'

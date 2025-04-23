@@ -37,21 +37,21 @@ class Fornecedor {
     getVrFrete() {
         return this.vr_frete;
     }
-    static criarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete) {
+    static criarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
                 const sql_insert = `
                 INSERT INTO tb_fornecedor(
-                    tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete
-                ) VALUES (?, ?, ?, ?, ?)
+                    tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone
+                ) VALUES (?, ?, ?, ?)
             `;
-                const result = yield app_1.db.run(sql_insert, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete]);
+                const result = yield app_1.db.run(sql_insert, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone]);
                 if (result.lastID) {
                     return {
                         result: 'success',
                         message: 'Fornecedor criado com sucesso',
-                        data: new Fornecedor(result.lastID, tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete)
+                        data: new Fornecedor(result.lastID, tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone)
                     };
                 }
                 throw new Error('Falha ao criar fornecedor');
@@ -94,7 +94,7 @@ class Fornecedor {
             }
         });
     }
-    atualizarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete) {
+    atualizarFornecedor(tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
@@ -103,13 +103,12 @@ class Fornecedor {
                 SET tx_razao_social = ?,
                     tx_cpf_cnpj = ?,
                     tx_email = ?,
-                    tx_telefone = ?,
-                    vr_frete = ?
+                    tx_telefone = ?
                 WHERE id_fornecedor = ?
             `;
-                const result = yield app_1.db.run(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete, this.id_fornecedor]);
+                const result = yield app_1.db.run(sql_update, [tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, this.id_fornecedor]);
                 if (result) {
-                    Object.assign(this, { tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone, vr_frete });
+                    Object.assign(this, { tx_razao_social, tx_cpf_cnpj, tx_email, tx_telefone });
                     return {
                         result: 'success',
                         message: 'Fornecedor atualizado com sucesso'

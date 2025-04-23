@@ -16,9 +16,9 @@ class CompraController {
     };
 
     static async atualizar (req:Request, res:Response) {
-        const { id_compra, id_fornecedor, dt_compra, vr_frete } = req.body;
+        const { id_compra, id_fornecedor, dt_compra } = req.body;
         const compra = new Compra(Number(id_compra), id_fornecedor);
-        const result:any = await compra.atualizarCompra(id_fornecedor, dt_compra, vr_frete);
+        const result:any = await compra.atualizarCompra(id_fornecedor, dt_compra);
         res.status(result.result === 'success' ? 200 : 400).json(result);
     };
 

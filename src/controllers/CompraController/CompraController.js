@@ -32,9 +32,9 @@ class CompraController {
     ;
     static atualizar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id_compra, id_fornecedor, dt_compra, vr_frete } = req.body;
+            const { id_compra, id_fornecedor, dt_compra } = req.body;
             const compra = new CompraModel_1.default(Number(id_compra), id_fornecedor);
-            const result = yield compra.atualizarCompra(id_fornecedor, dt_compra, vr_frete);
+            const result = yield compra.atualizarCompra(id_fornecedor, dt_compra);
             res.status(result.result === 'success' ? 200 : 400).json(result);
         });
     }

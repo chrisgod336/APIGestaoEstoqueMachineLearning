@@ -72,7 +72,7 @@ class Compra {
             const result = await db.run(
                 `INSERT INTO tb_compra(
                     id_fornecedor, dt_compra
-                ) VALUES (?, ?, ?, ?, ?)`,
+                ) VALUES (?, ?)`,
                 [
                     id_fornecedor,  
                     dataCompra
@@ -107,7 +107,12 @@ class Compra {
                 sql = `SELECT * FROM tb_compra WHERE id_compra = ?`;
                 params = [id_compra];
             } else {
-                sql = `SELECT * FROM tb_compra ORDER BY id_compra`;
+                sql = `SELECT tb_compra.*, 
+                        tb_fornecedor.id_fornecedor||' - '||tb_fornecedor.tx_razao_social AS fornecedor
+                        FROM tb_compra
+                        INNER JOIN tb_fornecedor
+                        ON tb_compra.id_fornecedor = tb_fornecedor.id_fornecedor
+                        ORDER BY id_compra`;
             }
 
             const response = await db.all(sql, params);
@@ -129,24 +134,18 @@ class Compra {
 
     public async atualizarCompra(
         id_fornecedor: number,
-        dt_compra: string,
-        vr_frete: number
+        dt_compra: string
     ): Promise<object> {
         try {
-            const vr_total_compra = this.vr_compra + vr_frete;
 
             const result = await db.run(
                 `UPDATE tb_compra
                 SET id_fornecedor = ?,
-                    dt_compra = ?,
-                    vr_total_compra = ?,
-                    vr_frete = ?
+                    dt_compra = ?
                 WHERE id_compra = ?`,
                 [
                     id_fornecedor,
                     dt_compra,
-                    vr_total_compra,
-                    vr_frete,
                     this.id_compra
                 ]
             );
@@ -154,8 +153,6 @@ class Compra {
             if (result) {
                 this.id_fornecedor = id_fornecedor;
                 this.dt_compra = dt_compra;
-                this.vr_total_compra = vr_total_compra;
-                this.vr_frete = vr_frete;
 
                 return {
                     result: 'success',
