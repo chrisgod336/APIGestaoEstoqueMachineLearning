@@ -146,6 +146,7 @@ class CompraProduto {
             }
             throw new Error('Falha ao adicionar item à compra');
         } catch (error: any) {
+            console.error(error)
             return {
                 result: 'error',
                 message: error?.message ?? 'Erro ao adicionar item à compra.'

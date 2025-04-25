@@ -38,10 +38,12 @@ const PORT = process.env.PORT || 3000;
 let db;
 function setupDatabase() {
     return __awaiter(this, void 0, void 0, function* () {
-        return (0, sqlite_1.open)({
+        const database = yield (0, sqlite_1.open)({
             filename: './database.db',
             driver: sqlite3_1.default.Database
         });
+        yield database.exec('PRAGMA journal_mode = WAL;');
+        return database;
     });
 }
 // Middlewares

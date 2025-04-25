@@ -25,11 +25,16 @@ const PORT = process.env.PORT || 3000;
 let db: Database;
 
 async function setupDatabase(): Promise<Database> {
-  return open({
+  const database = await open({
     filename: './database.db',
     driver: sqlite3.Database
   });
+
+  await database.exec('PRAGMA journal_mode = WAL;');
+
+  return database;
 }
+
 
 // Middlewares
 app.use(express.json());
