@@ -8,8 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
+const VendaProdutoModel_1 = __importDefault(require("./VendaProdutoModel"));
 class Venda {
     constructor(id_venda, id_cliente, dt_venda, vr_venda, status) {
         this.id_venda = id_venda;
@@ -128,11 +132,24 @@ class Venda {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const result = yield app_1.db.run('DELETE FROM tb_venda_produto WHERE id_venda = ?', [this.id_venda]);
-                const result2 = yield app_1.db.run('DELETE FROM tb_venda WHERE id_venda = ?', [this.id_venda]);
+                const sql_search = `
+            SELECT id_venda_produto, id_venda, id_produto, nu_quantidade
+            FROM tb_venda_produto
+            WHERE id_venda = ?
+            `;
+                const response = yield app_1.db.all(sql_search, [this.id_venda]);
+                if (response.length > 0) {
+                    for (const element of response) {
+                        const vp = new VendaProdutoModel_1.default(element === null || element === void 0 ? void 0 : element.id_venda_produto, element === null || element === void 0 ? void 0 : element.id_venda, element === null || element === void 0 ? void 0 : element.id_produto, element === null || element === void 0 ? void 0 : element.nu_quantidade);
+                        if (vp) {
+                            yield vp.deletarVendaProduto();
+                        }
+                    }
+                }
+                const result = yield app_1.db.run('DELETE FROM tb_venda WHERE id_venda = ?', [this.id_venda]);
                 return {
-                    result: (result && result2) ? 'success' : 'error',
-                    message: (result && result2)
+                    result: (result) ? 'success' : 'error',
+                    message: (result)
                         ? 'Venda deletada com sucesso'
                         : 'Nenhuma venda foi deletada'
                 };

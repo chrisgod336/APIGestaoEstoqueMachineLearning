@@ -1,4 +1,5 @@
 import { db } from "../../../app";
+import Estoque from "../Estoque/EstoqueModel";
 
 class VendaProduto {
     private id_venda_produto: number;
@@ -126,6 +127,9 @@ class VendaProduto {
             );
 
             if (result.lastID) {
+
+                Estoque.movimentarEstoque(id_produto, nu_quantidade, '-');
+
                 const recalcular = await this.recalcularVenda(id_venda);
                 if (recalcular) {
                     return recalcular;
@@ -194,6 +198,15 @@ class VendaProduto {
                 return calcula_vr_total;
             }
 
+            const res = await db.all(`SELECT id_produto, nu_quantidade FROM tb_venda_produto WHERE id_venda = ? AND id_venda_produto = ?`, [this.id_venda, this.id_venda_produto]);
+
+            if(!res || res.length === 0){
+                throw new Error('Nenhum item encontrado.');
+            }
+
+            const id_produto_antigo = res[0].id_produto;
+            const nu_quantidade_antiga = res[0].nu_quantidade;
+
             const vr_total = calcula_vr_total?.data;
 
             const result = await db.run(
@@ -208,6 +221,10 @@ class VendaProduto {
             );
 
             if (result) {
+
+                Estoque.movimentarEstoque(id_produto_antigo, nu_quantidade_antiga, '+');
+                Estoque.movimentarEstoque(id_produto, nu_quantidade, '-');
+
                 this.id_estoque = id_estoque;
                 this.id_produto = id_produto;
                 this.nu_quantidade = nu_quantidade;
@@ -234,12 +251,25 @@ class VendaProduto {
 
     public async deletarVendaProduto(): Promise<object> {
         try {
+
+            const res = await db.all(`SELECT id_produto, nu_quantidade FROM tb_venda_produto WHERE id_venda = ? AND id_venda_produto = ?`,
+                [this.id_venda, this.id_venda_produto]);
+
+            if(!res || res.length === 0){
+                throw new Error('Nenhum item foi encontrado.');
+            }
+
+            this.id_produto = res[0]?.id_produto;
+            this.nu_quantidade = res[0]?.nu_quantidade;
+
             const result = await db.run(
                 'DELETE FROM tb_venda_produto WHERE id_venda = ? AND id_venda_produto = ?',
                 [this.id_venda, this.id_venda_produto]
             );
 
             if (result) {
+                Estoque.movimentarEstoque(this.id_produto, this.nu_quantidade, '+');
+
                 const recalcular = await VendaProduto.recalcularVenda(this.id_venda);
                 if (recalcular) {
                     return recalcular;

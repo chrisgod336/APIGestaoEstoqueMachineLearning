@@ -1,4 +1,5 @@
 import { db } from "../../../app";
+import VendaProduto from "./VendaProdutoModel";
 
 class Venda {
     private id_venda: number;
@@ -133,19 +134,36 @@ class Venda {
     public async deletarVenda(): Promise<object> {
         try {
 
-            const result = await db.run(
-                'DELETE FROM tb_venda_produto WHERE id_venda = ?', 
-                [this.id_venda]
-            );
+            const sql_search = `
+            SELECT id_venda_produto, id_venda, id_produto, nu_quantidade
+            FROM tb_venda_produto
+            WHERE id_venda = ?
+            `;
+            
+            const response = await db.all(sql_search, [this.id_venda]);
 
-            const result2 = await db.run(
+            if(response.length > 0){
+                for (const element of response) {
+                    const vp = new VendaProduto(
+                        element?.id_venda_produto,
+                        element?.id_venda,
+                        element?.id_produto,
+                        element?.nu_quantidade
+                    );
+                    if (vp) {
+                        await vp.deletarVendaProduto();
+                    }
+                }
+            }
+
+            const result = await db.run(
                 'DELETE FROM tb_venda WHERE id_venda = ?', 
                 [this.id_venda]
             );
 
             return {
-                result: (result&&result2) ? 'success' : 'error',
-                message: (result&&result2) 
+                result: (result) ? 'success' : 'error',
+                message: (result) 
                     ? 'Venda deletada com sucesso' 
                     : 'Nenhuma venda foi deletada'
             };

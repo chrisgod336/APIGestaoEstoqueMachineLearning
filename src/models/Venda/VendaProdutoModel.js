@@ -8,8 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
+const EstoqueModel_1 = __importDefault(require("../Estoque/EstoqueModel"));
 class VendaProduto {
     constructor(id_venda_produto, id_venda, id_estoque, id_produto, nu_quantidade, vr_total) {
         this.id_venda_produto = id_venda_produto;
@@ -99,6 +103,7 @@ class VendaProduto {
                     id_produto, nu_quantidade, vr_total
                 ) VALUES (?, ?, ?, ?, ?)`, [id_venda, id_estoque, id_produto, nu_quantidade, vr_total]);
                 if (result.lastID) {
+                    EstoqueModel_1.default.movimentarEstoque(id_produto, nu_quantidade, '-');
                     const recalcular = yield this.recalcularVenda(id_venda);
                     if (recalcular) {
                         return recalcular;
@@ -158,6 +163,12 @@ class VendaProduto {
                 if (!calcula_vr_total) {
                     return calcula_vr_total;
                 }
+                const res = yield app_1.db.all(`SELECT id_produto, nu_quantidade FROM tb_venda_produto WHERE id_venda = ? AND id_venda_produto = ?`, [this.id_venda, this.id_venda_produto]);
+                if (!res || res.length === 0) {
+                    throw new Error('Nenhum item encontrado.');
+                }
+                const id_produto_antigo = res[0].id_produto;
+                const nu_quantidade_antiga = res[0].nu_quantidade;
                 const vr_total = calcula_vr_total === null || calcula_vr_total === void 0 ? void 0 : calcula_vr_total.data;
                 const result = yield app_1.db.run(`UPDATE tb_venda_produto
                 SET id_estoque = ?,
@@ -167,6 +178,8 @@ class VendaProduto {
                 WHERE id_venda = ?
                 AND id_venda_produto = ?`, [id_estoque, id_produto, nu_quantidade, vr_total, this.id_venda, this.id_venda_produto]);
                 if (result) {
+                    EstoqueModel_1.default.movimentarEstoque(id_produto_antigo, nu_quantidade_antiga, '+');
+                    EstoqueModel_1.default.movimentarEstoque(id_produto, nu_quantidade, '-');
                     this.id_estoque = id_estoque;
                     this.id_produto = id_produto;
                     this.nu_quantidade = nu_quantidade;
@@ -192,10 +205,17 @@ class VendaProduto {
     }
     deletarVendaProduto() {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
+            var _a, _b, _c;
             try {
+                const res = yield app_1.db.all(`SELECT id_produto, nu_quantidade FROM tb_venda_produto WHERE id_venda = ? AND id_venda_produto = ?`, [this.id_venda, this.id_venda_produto]);
+                if (!res || res.length === 0) {
+                    throw new Error('Nenhum item foi encontrado.');
+                }
+                this.id_produto = (_a = res[0]) === null || _a === void 0 ? void 0 : _a.id_produto;
+                this.nu_quantidade = (_b = res[0]) === null || _b === void 0 ? void 0 : _b.nu_quantidade;
                 const result = yield app_1.db.run('DELETE FROM tb_venda_produto WHERE id_venda = ? AND id_venda_produto = ?', [this.id_venda, this.id_venda_produto]);
                 if (result) {
+                    EstoqueModel_1.default.movimentarEstoque(this.id_produto, this.nu_quantidade, '+');
                     const recalcular = yield VendaProduto.recalcularVenda(this.id_venda);
                     if (recalcular) {
                         return recalcular;
@@ -210,7 +230,7 @@ class VendaProduto {
             catch (error) {
                 return {
                     result: 'error',
-                    message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : 'Erro ao tentar deletar item da venda.'
+                    message: (_c = error === null || error === void 0 ? void 0 : error.message) !== null && _c !== void 0 ? _c : 'Erro ao tentar deletar item da venda.'
                 };
             }
         });

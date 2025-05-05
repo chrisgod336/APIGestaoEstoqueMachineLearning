@@ -146,14 +146,12 @@ class Compra {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                console.log("id compra:", this.id_compra);
                 const sql_search = `
             SELECT id_compra_produto, id_compra, id_produto, nu_quantidade
             FROM tb_compra_produto
             WHERE id_compra = ?
             `;
                 const response = yield app_1.db.all(sql_search, [this.id_compra]);
-                console.log(response);
                 if (response.length > 0) {
                     for (const element of response) {
                         const cp = new CompraProdutoModel_1.default(element === null || element === void 0 ? void 0 : element.id_compra_produto, element === null || element === void 0 ? void 0 : element.id_compra, element === null || element === void 0 ? void 0 : element.id_produto, element === null || element === void 0 ? void 0 : element.nu_quantidade);
@@ -162,9 +160,7 @@ class Compra {
                         }
                     }
                 }
-                console.log("id compra:", this.id_compra);
                 const result = yield app_1.db.run('DELETE FROM tb_compra WHERE id_compra = ?', [this.id_compra]);
-                console.log(result);
                 return {
                     result: (result) ? 'success' : 'error',
                     message: (result)
