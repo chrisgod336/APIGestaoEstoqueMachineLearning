@@ -35,7 +35,7 @@ class VendaProdutoController {
 
     static async deletar(req: Request, res: Response) {
         try {
-            const { id_venda_produto, id_venda } = req.params;
+            const { id_venda_produto, id_venda } = req.query;
             const vendaProduto = new VendaProduto(Number(id_venda_produto), Number(id_venda), 0, 0, 0);
             const resultado = await vendaProduto.deletarVendaProduto();
             res.status(200).json(resultado);

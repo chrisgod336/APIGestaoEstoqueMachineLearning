@@ -131,8 +131,8 @@ class VendaProduto {
                 Estoque.movimentarEstoque(id_produto, nu_quantidade, '-');
 
                 const recalcular = await this.recalcularVenda(id_venda);
-                if (recalcular) {
-                    return recalcular;
+                if (!recalcular) {
+                    throw new Error('Erro ao tentar recalcular valor da venda.');
                 }
 
                 return {
@@ -231,8 +231,8 @@ class VendaProduto {
                 this.vr_total = vr_total;
 
                 const recalcular = await VendaProduto.recalcularVenda(this.id_venda);
-                if (recalcular) {
-                    return recalcular;
+                if (!recalcular) {
+                    throw new Error('Erro ao tentar recalcular valor da venda.');
                 }
 
                 return {
@@ -251,7 +251,6 @@ class VendaProduto {
 
     public async deletarVendaProduto(): Promise<object> {
         try {
-
             const res = await db.all(`SELECT id_produto, nu_quantidade FROM tb_venda_produto WHERE id_venda = ? AND id_venda_produto = ?`,
                 [this.id_venda, this.id_venda_produto]);
 
@@ -271,8 +270,8 @@ class VendaProduto {
                 Estoque.movimentarEstoque(this.id_produto, this.nu_quantidade, '+');
 
                 const recalcular = await VendaProduto.recalcularVenda(this.id_venda);
-                if (recalcular) {
-                    return recalcular;
+                if (!recalcular) {
+                    throw new Error('Erro ao tentar recalcular valor da venda.');
                 }
 
                 return {

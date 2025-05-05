@@ -105,8 +105,8 @@ class VendaProduto {
                 if (result.lastID) {
                     EstoqueModel_1.default.movimentarEstoque(id_produto, nu_quantidade, '-');
                     const recalcular = yield this.recalcularVenda(id_venda);
-                    if (recalcular) {
-                        return recalcular;
+                    if (!recalcular) {
+                        throw new Error('Erro ao tentar recalcular valor da venda.');
                     }
                     return {
                         result: 'success',
@@ -185,8 +185,8 @@ class VendaProduto {
                     this.nu_quantidade = nu_quantidade;
                     this.vr_total = vr_total;
                     const recalcular = yield VendaProduto.recalcularVenda(this.id_venda);
-                    if (recalcular) {
-                        return recalcular;
+                    if (!recalcular) {
+                        throw new Error('Erro ao tentar recalcular valor da venda.');
                     }
                     return {
                         result: 'success',
@@ -207,6 +207,7 @@ class VendaProduto {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c;
             try {
+                console.log([this.id_venda, this.id_venda_produto]);
                 const res = yield app_1.db.all(`SELECT id_produto, nu_quantidade FROM tb_venda_produto WHERE id_venda = ? AND id_venda_produto = ?`, [this.id_venda, this.id_venda_produto]);
                 if (!res || res.length === 0) {
                     throw new Error('Nenhum item foi encontrado.');
@@ -217,8 +218,8 @@ class VendaProduto {
                 if (result) {
                     EstoqueModel_1.default.movimentarEstoque(this.id_produto, this.nu_quantidade, '+');
                     const recalcular = yield VendaProduto.recalcularVenda(this.id_venda);
-                    if (recalcular) {
-                        return recalcular;
+                    if (!recalcular) {
+                        throw new Error('Erro ao tentar recalcular valor da venda.');
                     }
                     return {
                         result: 'success',

@@ -54,8 +54,13 @@ class VendaProdutoController {
     static deletar(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { id_venda_produto, id_venda } = req.params;
+                const { id_venda_produto, id_venda } = req.query;
+                console.log("id_venda: ", id_venda);
+                console.log("id_venda_produto: ", id_venda_produto);
                 const vendaProduto = new VendaProdutoModel_1.default(Number(id_venda_produto), Number(id_venda), 0, 0, 0);
+                console.log("Venda produto:", vendaProduto);
+                console.log("getIdVenda:", vendaProduto.getIdVenda());
+                console.log("getIdVendaProduto:", vendaProduto.getIdVendaProduto());
                 const resultado = yield vendaProduto.deletarVendaProduto();
                 res.status(200).json(resultado);
             }
