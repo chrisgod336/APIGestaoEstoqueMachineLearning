@@ -51,9 +51,9 @@ async function createTables(database: Database): Promise<void> {
 
     const sql = fs.readFileSync(sqlPath, 'utf-8');
     await database.exec(sql);
-    console.log('✅ Tabelas criadas com sucesso!');
+    console.log('Tabelas criadas com sucesso!');
   } catch (error) {
-    console.error('❌ Erro no processo de criação de tabelas:', error);
+    console.error('Erro no processo de criação de tabelas:', error);
     throw error;
   }
 }
@@ -67,7 +67,7 @@ declare module 'express' {
 
 // Rota de teste
 app.get('/', (req, res) => {
-  res.send('API com SQLite está rodando 🚀');
+  res.send('API com SQLite está rodando');
 });
 
 // Configuração das rotas
@@ -87,12 +87,10 @@ async function startServer() {
     await createTables(db);
     
     app.listen(PORT, () => {
-      console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-      console.log('📊 Banco de dados SQLite pronto para uso');
-      console.log(`⏱️  Iniciado em: ${new Date().toLocaleString()}`);
+      console.log(`Servidor rodando em http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error('❌ Falha ao iniciar o servidor:', error);
+    console.error('Falha ao iniciar o servidor:', error);
     process.exit(1);
   }
 }

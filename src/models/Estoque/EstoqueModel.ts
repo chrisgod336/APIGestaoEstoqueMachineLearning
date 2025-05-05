@@ -159,6 +159,31 @@ class Estoque {
         }
     }
 
+    public static async movimentarEstoque(id_produto:number, nu_quantidade_new:number, operation:'+'|'-'): Promise<object> {
+        try {
+
+            const sql_update = `UPDATE tb_estoque SET nu_quantidade = nu_quantidade ${operation} ? WHERE id_produto = ?`;
+            const values = [nu_quantidade_new, id_produto];
+
+            const result = await db.run(sql_update, values);
+
+            if (result) {
+                
+                return {
+                    result: 'success',
+                    message: 'Estoque movimentado com sucesso'
+                };
+            }
+            throw new Error('Nenhum estoque foi movimentado');
+
+        } catch (error: any) {
+            return {
+                result: 'error',
+                message: error?.message ?? 'Erro ao tentar movimentar estoque.'
+            };
+        }
+    }
+
 }
 
 export default Estoque;

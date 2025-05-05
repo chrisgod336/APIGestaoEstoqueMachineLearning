@@ -8,8 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
+const EstoqueModel_1 = __importDefault(require("../Estoque/EstoqueModel"));
 class CompraProduto {
     constructor(id_compra_produto, id_compra, id_estoque, id_produto, nu_quantidade, vr_total) {
         this.id_compra_produto = id_compra_produto;
@@ -101,6 +105,7 @@ class CompraProduto {
                     if (recalcular.result !== 'success') {
                         return recalcular;
                     }
+                    EstoqueModel_1.default.movimentarEstoque(id_produto, nu_quantidade, '+');
                     return {
                         result: 'success',
                         message: 'Item adicionado à compra com sucesso',
@@ -157,6 +162,12 @@ class CompraProduto {
                 if (calcula_vr_total.result === 'error') {
                     return calcula_vr_total;
                 }
+                const res = yield app_1.db.all(`SELECT id_produto, nu_quantidade FROM tb_compra_produto WHERE id_compra = ? AND id_compra_produto = ?`, [this.id_compra, this.id_compra_produto]);
+                if (!res || res.length === 0) {
+                    throw new Error('Nenhum item encontrado.');
+                }
+                const id_produto_antigo = res[0].id_produto;
+                const nu_quantidade_antiga = res[0].nu_quantidade;
                 const vr_total = calcula_vr_total.data;
                 const result = yield app_1.db.run(`UPDATE tb_compra_produto
                 SET id_estoque = ?,
@@ -166,6 +177,8 @@ class CompraProduto {
                 WHERE id_compra = ?
                 AND id_compra_produto = ?`, [id_estoque, id_produto, nu_quantidade, vr_total, this.id_compra, this.id_compra_produto]);
                 if (result.changes > 0) {
+                    EstoqueModel_1.default.movimentarEstoque(id_produto_antigo, nu_quantidade_antiga, '-');
+                    EstoqueModel_1.default.movimentarEstoque(id_produto, nu_quantidade, '+');
                     this.id_estoque = id_estoque;
                     this.id_produto = id_produto;
                     this.nu_quantidade = nu_quantidade;
@@ -191,10 +204,17 @@ class CompraProduto {
     }
     deletarCompraProduto() {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
+            var _a, _b, _c;
             try {
+                const res = yield app_1.db.all(`SELECT id_produto, nu_quantidade FROM tb_compra_produto WHERE id_compra = ? AND id_compra_produto = ?`, [this.id_compra, this.id_compra_produto]);
+                if (!res || res.length === 0) {
+                    throw new Error('Nenhum item foi encontrado.');
+                }
+                this.id_produto = (_a = res[0]) === null || _a === void 0 ? void 0 : _a.id_produto;
+                this.nu_quantidade = (_b = res[0]) === null || _b === void 0 ? void 0 : _b.nu_quantidade;
                 const result = yield app_1.db.run('DELETE FROM tb_compra_produto WHERE id_compra = ? AND id_compra_produto = ?', [this.id_compra, this.id_compra_produto]);
                 if (result.changes > 0) {
+                    EstoqueModel_1.default.movimentarEstoque(this.id_produto, this.nu_quantidade, '-');
                     const recalcular = yield CompraProduto.recalcularCompra(this.id_compra);
                     if (recalcular.result !== 'success') {
                         return recalcular;
@@ -207,9 +227,10 @@ class CompraProduto {
                 throw new Error('Nenhum item foi deletado');
             }
             catch (error) {
+                console.error(error);
                 return {
                     result: 'error',
-                    message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : 'Erro ao deletar item da compra.'
+                    message: (_c = error === null || error === void 0 ? void 0 : error.message) !== null && _c !== void 0 ? _c : 'Erro ao deletar item da compra.'
                 };
             }
         });

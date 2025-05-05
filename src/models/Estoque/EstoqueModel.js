@@ -158,5 +158,31 @@ class Estoque {
             }
         });
     }
+    static movimentarEstoque(id_produto, nu_quantidade_new, operation) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                console.log('id_produto:', id_produto);
+                console.log('nu_quantidade_new:', nu_quantidade_new);
+                console.log('operation:', operation);
+                const sql_update = `UPDATE tb_estoque SET nu_quantidade = nu_quantidade ${operation} ? WHERE id_produto = ?`;
+                const values = [nu_quantidade_new, id_produto];
+                const result = yield app_1.db.run(sql_update, values);
+                if (result) {
+                    return {
+                        result: 'success',
+                        message: 'Estoque movimentado com sucesso'
+                    };
+                }
+                throw new Error('Nenhum estoque foi movimentado');
+            }
+            catch (error) {
+                return {
+                    result: 'error',
+                    message: (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : 'Erro ao tentar movimentar estoque.'
+                };
+            }
+        });
+    }
 }
 exports.default = Estoque;

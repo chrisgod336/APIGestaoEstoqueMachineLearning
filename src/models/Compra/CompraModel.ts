@@ -1,4 +1,5 @@
 import { db } from "../../../app";
+import CompraProduto from "./CompraProdutoModel";
 
 class Compra {
     private id_compra: number;
@@ -171,19 +172,37 @@ class Compra {
     public async deletarCompra(): Promise<object> {
         try {
 
-            const result = await db.run(
-                'DELETE FROM tb_compra_produto WHERE id_compra = ?',
-                [this.id_compra]
-            );
 
-            const result2 = await db.run(
+            const sql_search = `
+            SELECT id_compra_produto, id_compra, id_produto, nu_quantidade
+            FROM tb_compra_produto
+            WHERE id_compra = ?
+            `;
+            
+            const response = await db.all(sql_search, [this.id_compra]);
+
+            if(response.length > 0){
+                for (const element of response) {
+                    const cp = new CompraProduto(
+                        element?.id_compra_produto,
+                        element?.id_compra,
+                        element?.id_produto,
+                        element?.nu_quantidade
+                    );
+                    if (cp) {
+                        await cp.deletarCompraProduto();
+                    }
+                }
+            }
+
+            const result = await db.run(
                 'DELETE FROM tb_compra WHERE id_compra = ?',
                 [this.id_compra]
             );
 
             return {
-                result: (result&&result2) ? 'success' : 'error',
-                message: (result&&result2) 
+                result: (result) ? 'success' : 'error',
+                message: (result) 
                     ? 'Compra deletada com sucesso' 
                     : 'Nenhuma compra foi deletada'
             };

@@ -8,8 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
+const CompraProdutoModel_1 = __importDefault(require("./CompraProdutoModel"));
 class Compra {
     constructor(id_compra, id_fornecedor, dt_compra, tx_status, vr_total_compra, vr_compra, vr_frete, dt_entrega) {
         this.id_compra = id_compra;
@@ -142,11 +146,28 @@ class Compra {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
             try {
-                const result = yield app_1.db.run('DELETE FROM tb_compra_produto WHERE id_compra = ?', [this.id_compra]);
-                const result2 = yield app_1.db.run('DELETE FROM tb_compra WHERE id_compra = ?', [this.id_compra]);
+                console.log("id compra:", this.id_compra);
+                const sql_search = `
+            SELECT id_compra_produto, id_compra, id_produto, nu_quantidade
+            FROM tb_compra_produto
+            WHERE id_compra = ?
+            `;
+                const response = yield app_1.db.all(sql_search, [this.id_compra]);
+                console.log(response);
+                if (response.length > 0) {
+                    for (const element of response) {
+                        const cp = new CompraProdutoModel_1.default(element === null || element === void 0 ? void 0 : element.id_compra_produto, element === null || element === void 0 ? void 0 : element.id_compra, element === null || element === void 0 ? void 0 : element.id_produto, element === null || element === void 0 ? void 0 : element.nu_quantidade);
+                        if (cp) {
+                            yield cp.deletarCompraProduto();
+                        }
+                    }
+                }
+                console.log("id compra:", this.id_compra);
+                const result = yield app_1.db.run('DELETE FROM tb_compra WHERE id_compra = ?', [this.id_compra]);
+                console.log(result);
                 return {
-                    result: (result && result2) ? 'success' : 'error',
-                    message: (result && result2)
+                    result: (result) ? 'success' : 'error',
+                    message: (result)
                         ? 'Compra deletada com sucesso'
                         : 'Nenhuma compra foi deletada'
                 };

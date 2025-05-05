@@ -59,17 +59,17 @@ function createTables(database) {
             }
             const sql = fs_1.default.readFileSync(sqlPath, 'utf-8');
             yield database.exec(sql);
-            console.log('✅ Tabelas criadas com sucesso!');
+            console.log('Tabelas criadas com sucesso!');
         }
         catch (error) {
-            console.error('❌ Erro no processo de criação de tabelas:', error);
+            console.error('Erro no processo de criação de tabelas:', error);
             throw error;
         }
     });
 }
 // Rota de teste
 app.get('/', (req, res) => {
-    res.send('API com SQLite está rodando 🚀');
+    res.send('API com SQLite está rodando');
 });
 // Configuração das rotas
 app.use("/fornecedor", FornecedorRoutes_1.default);
@@ -87,13 +87,11 @@ function startServer() {
             exports.db = db = yield setupDatabase();
             yield createTables(db);
             app.listen(PORT, () => {
-                console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-                console.log('📊 Banco de dados SQLite pronto para uso');
-                console.log(`⏱️  Iniciado em: ${new Date().toLocaleString()}`);
+                console.log(`Servidor rodando em http://localhost:${PORT}`);
             });
         }
         catch (error) {
-            console.error('❌ Falha ao iniciar o servidor:', error);
+            console.error('Falha ao iniciar o servidor:', error);
             process.exit(1);
         }
     });

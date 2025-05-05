@@ -1,4 +1,5 @@
 import { db } from "../../../app";
+import Estoque from "../Estoque/EstoqueModel";
 
 class CompraProduto {
     private id_compra_produto: number;
@@ -131,6 +132,8 @@ class CompraProduto {
                     return recalcular;
                 }
 
+                Estoque.movimentarEstoque(id_produto, nu_quantidade, '+');
+
                 return {
                     result: 'success',
                     message: 'Item adicionado à compra com sucesso',
@@ -195,6 +198,15 @@ class CompraProduto {
                 return calcula_vr_total;
             }
 
+            const res = await db.all(`SELECT id_produto, nu_quantidade FROM tb_compra_produto WHERE id_compra = ? AND id_compra_produto = ?`, [this.id_compra, this.id_compra_produto]);
+
+            if(!res || res.length === 0){
+                throw new Error('Nenhum item encontrado.');
+            }
+
+            const id_produto_antigo = res[0].id_produto;
+            const nu_quantidade_antiga = res[0].nu_quantidade;
+
             const vr_total = calcula_vr_total.data;
 
             const result:any = await db.run(
@@ -209,6 +221,10 @@ class CompraProduto {
             );
 
             if (result.changes > 0) {
+
+                Estoque.movimentarEstoque(id_produto_antigo, nu_quantidade_antiga, '-');
+                Estoque.movimentarEstoque(id_produto, nu_quantidade, '+');
+
                 this.id_estoque = id_estoque;
                 this.id_produto = id_produto;
                 this.nu_quantidade = nu_quantidade;
@@ -235,12 +251,26 @@ class CompraProduto {
 
     public async deletarCompraProduto(): Promise<object> {
         try {
+
+            const res = await db.all(`SELECT id_produto, nu_quantidade FROM tb_compra_produto WHERE id_compra = ? AND id_compra_produto = ?`,
+                [this.id_compra, this.id_compra_produto]);
+
+            if(!res || res.length === 0){
+                throw new Error('Nenhum item foi encontrado.');
+            }
+
+            this.id_produto = res[0]?.id_produto;
+            this.nu_quantidade = res[0]?.nu_quantidade;
+
             const result:any = await db.run(
                 'DELETE FROM tb_compra_produto WHERE id_compra = ? AND id_compra_produto = ?',
                 [this.id_compra, this.id_compra_produto]
             );
 
             if (result.changes > 0) {
+
+                Estoque.movimentarEstoque(this.id_produto, this.nu_quantidade, '-');
+
                 const recalcular:any = await CompraProduto.recalcularCompra(this.id_compra);
                 if (recalcular.result !== 'success') {
                     return recalcular;
@@ -253,6 +283,7 @@ class CompraProduto {
             }
             throw new Error('Nenhum item foi deletado');
         } catch (error: any) {
+            console.error(error);
             return {
                 result: 'error',
                 message: error?.message ?? 'Erro ao deletar item da compra.'
