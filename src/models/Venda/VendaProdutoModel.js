@@ -207,7 +207,6 @@ class VendaProduto {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c;
             try {
-                console.log([this.id_venda, this.id_venda_produto]);
                 const res = yield app_1.db.all(`SELECT id_produto, nu_quantidade FROM tb_venda_produto WHERE id_venda = ? AND id_venda_produto = ?`, [this.id_venda, this.id_venda_produto]);
                 if (!res || res.length === 0) {
                     throw new Error('Nenhum item foi encontrado.');
