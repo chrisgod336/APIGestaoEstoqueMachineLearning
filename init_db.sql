@@ -109,6 +109,29 @@ CREATE TABLE IF NOT EXISTS tb_compra_produto(
     REFERENCES tb_produto(id_produto)ON DELETE RESTRICT
 );
 
+--TABELAS DE PREVISAO
+
+CREATE TABLE IF NOT EXISTS tb_previsao_venda(
+	mes INTEGER NOT NULL,
+	ano INTEGER NOT NULL,
+	id_produto INTEGER NOT NULL,
+	nu quantidade INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tb_previsao_compra(
+	mes INTEGER NOT NULL,
+	ano INTEGER NOT NULL,
+	id_produto INTEGER NOT NULL,
+	nu quantidade INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tb_previsao_estoque(
+	mes INTEGER NOT NULL,
+	ano INTEGER NOT NULL,
+	id_produto INTEGER NOT NULL,
+	nu quantidade INTEGER NOT NULL
+);
+
 -- --INSERTS VENDAS
 
 -- -- SCRIPT GERADO AUTOMATICAMENTE PARA VENDAS ATÉ MAIO 2025
