@@ -71,19 +71,24 @@ class BI {
                     proximos6Meses.push(adicionarMeses(dataAtual, i));
                 }
                 //Buscar os dados dos produtos nas tabelas previtivas para os próximos 6 meses
-                const query_compra = `SELECT * FROM tb_previsao_compra WHERE id_produto IN (${query_produtos}) ORDER BY mes, ano, id_produto`;
-                const query_venda = `SELECT * FROM tb_previsao_venda WHERE id_produto IN (${query_produtos}) ORDER BY mes, ano, id_produto`;
-                const query_estoque = `SELECT * FROM tb_previsao_estoque WHERE id_produto IN (${query_produtos}) ORDER BY mes, ano, id_produto`;
+                const query_compra = `SELECT *, (
+            SELECT tx_nome FROM tb_produto WHERE id_produto = tb_previsao_compra.id_produto
+            ) AS nome_produto FROM tb_previsao_compra WHERE id_produto IN (${query_produtos}) ORDER BY mes, ano, id_produto`;
+                const query_venda = `SELECT * , (
+            SELECT tx_nome FROM tb_produto WHERE id_produto = tb_previsao_venda.id_produto
+            ) AS nome_produto FROM tb_previsao_venda WHERE id_produto IN (${query_produtos}) ORDER BY mes, ano, id_produto`;
+                const query_estoque = `SELECT *, (
+            SELECT tx_nome FROM tb_produto WHERE id_produto = tb_previsao_estoque.id_produto
+            ) AS nome_produto FROM tb_previsao_estoque WHERE id_produto IN (${query_produtos}) ORDER BY mes, ano, id_produto`;
                 const response_compra = yield app_1.db.all(query_compra);
                 const response_venda = yield app_1.db.all(query_venda);
                 const response_estoque = yield app_1.db.all(query_estoque);
                 if (!response_compra.length || !response_venda.length || !response_estoque.length) {
                     throw new Error('Erros ao buscar os dados.');
                 }
-                const query_sum_compra = `SELECT mes, ano, SUM(nu_quantidade) AS qtd_total, SUM(vr_total) AS vr_total FROM tb_previsao_compra WHERE id_produto IN (${query_produtos}) GROUP BY mes, ano ORDER BY mes, ano`;
-                const query_sum_venda = `SELECT mes, ano, SUM(nu_quantidade) AS qtd_total, SUM(vr_total) AS vr_total FROM tb_previsao_venda WHERE id_produto IN (${query_produtos}) GROUP BY mes, ano ORDER BY mes, ano`;
-                const query_sum_estoque = `SELECT mes, ano, SUM(nu_quantidade) AS qtd_total, SUM(vr_total) AS vr_total FROM tb_previsao_estoque WHERE id_produto IN (${query_produtos}) GROUP BY mes, ano ORDER BY mes, ano`;
-                console.log(query_sum_compra);
+                const query_sum_compra = `SELECT mes, ano, SUM(nu_quantidade) AS nu_quantidade, SUM(vr_total) AS vr_total FROM tb_previsao_compra WHERE id_produto IN (${query_produtos}) GROUP BY mes, ano ORDER BY mes, ano`;
+                const query_sum_venda = `SELECT mes, ano, SUM(nu_quantidade) AS nu_quantidade, SUM(vr_total) AS vr_total FROM tb_previsao_venda WHERE id_produto IN (${query_produtos}) GROUP BY mes, ano ORDER BY mes, ano`;
+                const query_sum_estoque = `SELECT mes, ano, SUM(nu_quantidade) AS nu_quantidade, SUM(vr_total) AS vr_total FROM tb_previsao_estoque WHERE id_produto IN (${query_produtos}) GROUP BY mes, ano ORDER BY mes, ano`;
                 const response_sum_compra = yield app_1.db.all(query_sum_compra);
                 const response_sum_venda = yield app_1.db.all(query_sum_venda);
                 const response_sum_estoque = yield app_1.db.all(query_sum_estoque);
