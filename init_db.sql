@@ -11,7 +11,8 @@
 -- DROP TABLE IF EXISTS tb_cliente;
 -- DROP TABLE IF EXISTS tb_previsao_venda;
 -- DROP TABLE IF EXISTS tb_previsao_compra;
--- DROP TABLE IF EXISTS tb_estoque;
+-- DROP TABLE IF EXISTS tb_previsao_estoque;
+
 
 PRAGMA foreign_keys = ON;
 
@@ -118,24 +119,24 @@ CREATE TABLE IF NOT EXISTS tb_previsao_venda(
 	mes INTEGER NOT NULL,
 	ano INTEGER NOT NULL,
 	id_produto INTEGER NOT NULL,
-	nu quantidade INTEGER NOT NULL,
-  vr_total REAL NOT NULL DEFAULT 0
+	nu_quantidade INTEGER NOT NULL,
+  vr_total NUMERIC(18,2) DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS tb_previsao_compra(
 	mes INTEGER NOT NULL,
 	ano INTEGER NOT NULL,
 	id_produto INTEGER NOT NULL,
-	nu quantidade INTEGER NOT NULL,
-  vr_total REAL NOT NULL DEFAULT 0
+	nu_quantidade INTEGER NOT NULL,
+  vr_total NUMERIC(18,2) DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS tb_previsao_estoque(
 	mes INTEGER NOT NULL,
 	ano INTEGER NOT NULL,
 	id_produto INTEGER NOT NULL,
-	nu quantidade INTEGER NOT NULL,
-  vr_total REAL NOT NULL DEFAULT 0
+	nu_quantidade INTEGER NOT NULL,
+  vr_total NUMERIC(18,2) DEFAULT 0
 );
 
 -- --INSERTS VENDAS

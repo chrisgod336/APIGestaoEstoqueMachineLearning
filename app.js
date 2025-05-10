@@ -29,6 +29,7 @@ const VendaRoutes_1 = __importDefault(require("./src/routes/VendaRoutes/VendaRou
 const VendaProdutoRoutes_1 = __importDefault(require("./src/routes/VendaRoutes/VendaProdutoRoutes"));
 const CompraRoutes_1 = __importDefault(require("./src/routes/CompraRoutes/CompraRoutes"));
 const CompraProdutoRoutes_1 = __importDefault(require("./src/routes/CompraRoutes/CompraProdutoRoutes"));
+const BIRoutes_1 = __importDefault(require("./src/routes/BIRoutes/BIRoutes"));
 // Configuração inicial
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -80,6 +81,7 @@ app.use("/venda", VendaRoutes_1.default);
 app.use("/vendaProduto", VendaProdutoRoutes_1.default);
 app.use("/compra", CompraRoutes_1.default);
 app.use("/compraProduto", CompraProdutoRoutes_1.default);
+app.use('/BI', BIRoutes_1.default);
 // Inicialização do servidor
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
