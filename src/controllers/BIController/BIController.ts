@@ -5,7 +5,8 @@ class BIController {
   
   // Buscar próximos 6 meses
   static async getNextSixMonths(req: Request, res: Response) {
-    const result: any = await BI.getNextSixMonths();
+    const { limit } = req.query;
+    const result: any = await BI.getNextSixMonths(Number(limit)||0);
     return res.status(result.result === "success" ? 200 : 400).json(result);
   }
 

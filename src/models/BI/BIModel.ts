@@ -41,16 +41,16 @@ class BI {
         return this.vr_total;
     }
 
-    public static async getNextSixMonths(): Promise<object>{
+    public static async getNextSixMonths(limit?:number): Promise<object>{
 
         try{
-            //Buscar os 10 produtos  mais vendidos
+            //Buscar os produtos mais vendidos
             const query_produtos = 
             `SELECT id_produto
                 FROM tb_previsao_venda
                 GROUP BY id_produto
                 ORDER BY SUM(nu_quantidade) DESC
-                LIMIT 10
+                ${limit ? `LIMIT ${limit}` : ''}
             `;
 
             //Calcular o mês/ano dos próximos 6 meses

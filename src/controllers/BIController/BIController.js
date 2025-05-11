@@ -17,7 +17,8 @@ class BIController {
     // Buscar próximos 6 meses
     static getNextSixMonths(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield BIModel_1.default.getNextSixMonths();
+            const { limit } = req.query;
+            const result = yield BIModel_1.default.getNextSixMonths(Number(limit) || 0);
             return res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }

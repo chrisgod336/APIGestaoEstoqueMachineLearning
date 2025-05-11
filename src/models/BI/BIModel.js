@@ -33,15 +33,15 @@ class BI {
     getVrTotal() {
         return this.vr_total;
     }
-    static getNextSixMonths() {
+    static getNextSixMonths(limit) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                //Buscar os 10 produtos  mais vendidos
+                //Buscar os produtos mais vendidos
                 const query_produtos = `SELECT id_produto
                 FROM tb_previsao_venda
                 GROUP BY id_produto
                 ORDER BY SUM(nu_quantidade) DESC
-                LIMIT 10
+                ${limit ? `LIMIT ${limit}` : ''}
             `;
                 //Calcular o mês/ano dos próximos 6 meses
                 const dataAtual = new Date();
