@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -10,6 +43,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
+const tensorflow_1 = require("../../services/tensorflow");
+const tf = __importStar(require("@tensorflow/tfjs"));
 class BI {
     constructor(mes, ano, id_produto, nu_quantidade, vr_total) {
         this.mes = mes;
@@ -124,6 +159,161 @@ class BI {
                 };
             }
         });
+    }
+    static calculateNextSixMonths() {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                // 1. Obter dados históricos de vendas por produto e mês/ano
+                const queryHistData = `
+            SELECT 
+                p.id_produto, 
+                strftime('%m', v.dt_venda) as mes,
+                strftime('%Y', v.dt_venda) as ano,
+                SUM(p.nu_quantidade) as nu_quantidade,
+                SUM(p.vr_total) as vr_total
+            FROM tb_venda_produto p
+            JOIN tb_venda v ON p.id_venda = v.id_venda
+            GROUP BY p.id_produto, mes, ano
+            ORDER BY p.id_produto, ano, mes;
+            `;
+                const histData = yield app_1.db.all(queryHistData);
+                // 2. Obter estoque atual por produto
+                const queryStqAtual = `
+            SELECT id_produto, SUM(nu_quantidade) as nu_quantidade
+            FROM tb_estoque
+            GROUP BY id_produto;
+            `;
+                const estoqueAtual = yield app_1.db.all(queryStqAtual);
+                // 3. Processar dados para o modelo
+                const produtos = [...new Set(histData.map(item => item.id_produto))];
+                const previsoes = [];
+                // 4. Calcular próximos 6 meses
+                const dataAtual = new Date();
+                const mesesFuturos = Array.from({ length: 6 }, (_, i) => {
+                    const data = new Date(dataAtual);
+                    data.setMonth(data.getMonth() + i + 1);
+                    return {
+                        mes: data.getMonth() + 1,
+                        ano: data.getFullYear(),
+                        mesExt: ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'][data.getMonth()]
+                    };
+                });
+                // 5. Para cada produto, treinar modelo e fazer previsão
+                for (const idProduto of produtos) {
+                    const dadosProduto = histData.filter(item => item.id_produto === idProduto);
+                    if (dadosProduto.length < 3) {
+                        const mediaQuantidade = dadosProduto.reduce((sum, item) => sum + item.nu_quantidade, 0) / dadosProduto.length;
+                        const mediaValor = dadosProduto.reduce((sum, item) => sum + item.vr_total, 0) / dadosProduto.length;
+                        mesesFuturos.forEach(({ mes, ano, mesExt }) => {
+                            var _a;
+                            previsoes.push({
+                                id_produto: idProduto,
+                                mes,
+                                ano,
+                                mesExt,
+                                nu_quantidade: Math.round(mediaQuantidade),
+                                vr_total: Math.round(mediaValor),
+                                estoque_necessario: Math.round(mediaQuantidade * 1.1),
+                                compras_necessarias: Math.max(0, Math.round(mediaQuantidade * 1.1) -
+                                    (((_a = estoqueAtual.find(e => e.id_produto === idProduto)) === null || _a === void 0 ? void 0 : _a.nu_quantidade) || 0))
+                            });
+                        });
+                        continue;
+                    }
+                    // Preparar dados para o TensorFlow
+                    const dadosTreino = dadosProduto.map((item, index) => ({
+                        mes_sequencial: index,
+                        nu_quantidade: item.nu_quantidade,
+                        vr_total: item.vr_total
+                    }));
+                    try {
+                        // Treinar modelo
+                        const { model, minMonth, maxMonth, minQuantity, maxQuantity } = yield (0, tensorflow_1.trainModel)(dadosTreino);
+                        // Fazer previsões
+                        const estoqueProduto = ((_a = estoqueAtual.find(e => e.id_produto === idProduto)) === null || _a === void 0 ? void 0 : _a.nu_quantidade) || 0;
+                        for (let i = 0; i < mesesFuturos.length; i++) {
+                            const mesSequencial = dadosTreino.length + i;
+                            const input = tf.tensor3d([[[this.normalizar(mesSequencial, minMonth, maxMonth)]]], [1, 1, 1]);
+                            const pred = model.predict(input);
+                            const predData = yield pred.data();
+                            const quantidade = this.desnormalizar(predData[0], minQuantity, maxQuantity);
+                            const vrTotal = quantidade * (dadosProduto[0].vr_total / dadosProduto[0].nu_quantidade);
+                            previsoes.push({
+                                id_produto: idProduto,
+                                mes: mesesFuturos[i].mes,
+                                ano: mesesFuturos[i].ano,
+                                mesExt: mesesFuturos[i].mesExt,
+                                nu_quantidade: Math.round(quantidade),
+                                vr_total: Math.round(vrTotal),
+                                estoque_necessario: Math.round(quantidade * 1.1),
+                                compras_necessarias: Math.max(0, Math.round(quantidade * 1.1) - estoqueProduto)
+                            });
+                            // Liberar memória
+                            input.dispose();
+                            pred.dispose();
+                        }
+                    }
+                    catch (error) {
+                        console.error(`Erro ao treinar modelo para produto ${idProduto}:`, error);
+                        // Fallback para média móvel
+                        const mediaQuantidade = dadosProduto.slice(-3).reduce((sum, item) => sum + item.nu_quantidade, 0) / 3;
+                        const mediaValor = dadosProduto.slice(-3).reduce((sum, item) => sum + item.vr_total, 0) / 3;
+                        mesesFuturos.forEach(({ mes, ano, mesExt }) => {
+                            var _a;
+                            previsoes.push({
+                                id_produto: idProduto,
+                                mes,
+                                ano,
+                                mesExt,
+                                nu_quantidade: Math.round(mediaQuantidade),
+                                vr_total: Math.round(mediaValor),
+                                estoque_necessario: Math.round(mediaQuantidade * 1.1),
+                                compras_necessarias: Math.max(0, Math.round(mediaQuantidade * 1.1) -
+                                    (((_a = estoqueAtual.find(e => e.id_produto === idProduto)) === null || _a === void 0 ? void 0 : _a.nu_quantidade) || 0))
+                            });
+                        });
+                    }
+                }
+                // 6. Agrupar resultados por mês/ano para retorno
+                const resultadoAgrupado = mesesFuturos.map(({ mes, ano, mesExt }) => {
+                    const previsoesMes = previsoes.filter(p => p.mes === mes && p.ano === ano);
+                    return {
+                        mes,
+                        ano,
+                        mesExt,
+                        produtos: previsoesMes,
+                        total_quantidade: previsoesMes.reduce((sum, p) => sum + p.nu_quantidade, 0),
+                        total_valor: previsoesMes.reduce((sum, p) => sum + p.vr_total, 0),
+                        total_estoque: previsoesMes.reduce((sum, p) => sum + p.estoque_necessario, 0),
+                        total_compras: previsoesMes.reduce((sum, p) => sum + p.compras_necessarias, 0)
+                    };
+                });
+                return {
+                    result: "success",
+                    message: 'Previsão calculada com sucesso',
+                    data: {
+                        previsoes: resultadoAgrupado,
+                        produtos: produtos,
+                        estoque_atual: estoqueAtual
+                    }
+                };
+            }
+            catch (error) {
+                console.error('Erro em calculatorNextSixMonths:', error);
+                return {
+                    result: "error",
+                    message: (error === null || error === void 0 ? void 0 : error.message) || 'Erro ao calcular previsão'
+                };
+            }
+        });
+    }
+    // Funções auxiliares para normalização (devem estar no mesmo arquivo ou importadas)
+    static normalizar(val, min, max) {
+        return (val - min) / (max - min);
+    }
+    static desnormalizar(val, min, max) {
+        return val * (max - min) + min;
     }
 }
 exports.default = BI;

@@ -9,4 +9,6 @@ const router = (0, express_1.Router)();
 const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 // Criar próximos 6 meses
 router.get("/getNextSixMonths", asyncHandler(BIController_1.default.getNextSixMonths));
+//Calcular próximos 6 meses
+router.post("/calculateNextSixMonths", asyncHandler(BIController_1.default.calculatorNextSixMonths));
 exports.default = router;

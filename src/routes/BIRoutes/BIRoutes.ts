@@ -9,4 +9,7 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) =>
 // Criar próximos 6 meses
 router.get("/getNextSixMonths", asyncHandler(BIController.getNextSixMonths));
 
+//Calcular próximos 6 meses
+router.post("/calculateNextSixMonths", asyncHandler(BIController.calculatorNextSixMonths));
+
 export default router;

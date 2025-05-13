@@ -10,6 +10,12 @@ class BIController {
     return res.status(result.result === "success" ? 200 : 400).json(result);
   }
 
+  //Calcular próximos 6 meses
+  static async calculatorNextSixMonths(req: Request, res: Response) {
+    const result:any = await BI.calculateNextSixMonths();
+    return res.status(result.result === "success" ? 200 : 400).json(result);
+  }
+
 }
 
 export default BIController;

@@ -22,5 +22,12 @@ class BIController {
             return res.status(result.result === "success" ? 200 : 400).json(result);
         });
     }
+    //Calcular próximos 6 meses
+    static calculatorNextSixMonths(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const result = yield BIModel_1.default.calculateNextSixMonths();
+            return res.status(result.result === "success" ? 200 : 400).json(result);
+        });
+    }
 }
 exports.default = BIController;
