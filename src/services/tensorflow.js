@@ -43,55 +43,55 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.trainModel = trainModel;
-exports.denormalize = denormalize;
-exports.predict = predict;
 const tf = __importStar(require("@tensorflow/tfjs"));
 function trainModel(data) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Verificação dos dados
-        if (!data || data.length < 3) {
-            throw new Error('São necessários pelo menos 3 meses de dados para treinamento');
+        // Verificação robusta dos dados
+        if (!data || data.length < 6) {
+            throw new Error('São necessários pelo menos 6 meses de dados para treinamento');
         }
-        // Função de normalização
-        const normalize = (value, min, max) => {
-            if (max === min)
-                return 0.5; // Evita divisão por zero
-            return (value - min) / (max - min);
-        };
-        // Extrair e calcular estatísticas
-        const months = data.map(item => item.sequential_month);
-        const quantities = data.map(item => item.quantity);
+        // Ordenar por mes_sequencial
+        data.sort((a, b) => a.mes_sequencial - b.mes_sequencial);
+        // Extrair sequências temporais
+        const months = data.map(item => item.mes_sequencial);
+        const quantities = data.map(item => item.nu_quantidade);
+        // Calcular estatísticas para normalização
         const minMonth = Math.min(...months);
         const maxMonth = Math.max(...months);
         const minQuantity = Math.min(...quantities);
         const maxQuantity = Math.max(...quantities);
         try {
-            // Preparar os dados de treino
+            // Preparar dados de treino (sequências temporais)
             const xsData = data.map(item => [
-                [normalize(item.sequential_month, minMonth, maxMonth)]
+                [(item.mes_sequencial - minMonth) / (maxMonth - minMonth)]
             ]);
-            const ysData = data.map(item => normalize(item.quantity, minQuantity, maxQuantity));
-            // Criar tensores
-            const xs = tf.tensor3d(xsData, [data.length, 1, 1]);
-            const ys = tf.tensor2d(ysData, [data.length, 1]);
-            // Criar modelo
+            const ysData = data.map(item => (item.nu_quantidade - minQuantity) / (maxQuantity - minQuantity));
+            // Criar tensores com formato adequado para LSTM [samples, timeSteps, features]
+            const xs = tf.tensor3d(xsData, [xsData.length, 1, 1]);
+            const ys = tf.tensor2d(ysData, [ysData.length, 1]);
+            // Criar modelo LSTM mais sofisticado
             const model = tf.sequential();
+            // Camada LSTM com mais neurônios e returnSequences
             model.add(tf.layers.lstm({
-                units: 32,
+                units: 64,
                 inputShape: [1, 1],
-                activation: 'tanh'
+                returnSequences: false
             }));
+            // Camadas densas para processamento adicional
+            model.add(tf.layers.dense({ units: 32, activation: 'relu' }));
             model.add(tf.layers.dense({ units: 1 }));
-            // Compilar o modelo
+            // Compilar com otimizador e taxa de aprendizado ajustada
             model.compile({
-                optimizer: tf.train.adam(0.1),
-                loss: 'meanSquaredError'
+                optimizer: tf.train.adam(0.01),
+                loss: 'meanSquaredError',
+                metrics: ['mae']
             });
-            // Treinar o modelo
+            // Treinar com mais épocas e callbacks
             yield model.fit(xs, ys, {
-                epochs: 100,
+                epochs: 200,
                 batchSize: 1,
                 shuffle: false,
+                validationSplit: 0.2,
                 callbacks: {
                     onEpochEnd: (epoch, logs) => {
                         console.log(`Epoch ${epoch}: loss = ${logs === null || logs === void 0 ? void 0 : logs.loss}`);
@@ -109,23 +109,8 @@ function trainModel(data) {
             };
         }
         catch (error) {
-            console.error('Training error:', error);
-            throw new Error('Failed to train model');
+            console.error('Erro no treinamento:', error);
+            throw new Error('Falha ao treinar modelo');
         }
-    });
-}
-// Função para desnormalização
-function denormalize(value, min, max) {
-    return value * (max - min) + min;
-}
-// Função para fazer previsões
-function predict(model, month, minMonth, maxMonth, minQuantity, maxQuantity) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const normalizedMonth = (month - minMonth) / (maxMonth - minMonth);
-        const input = tf.tensor3d([[[normalizedMonth]]], [1, 1, 1]);
-        const output = model.predict(input);
-        const prediction = yield output.data();
-        output.dispose();
-        return denormalize(prediction[0], minQuantity, maxQuantity);
     });
 }
