@@ -186,6 +186,7 @@ class BI {
                      })))
                         .sort((a, b) => a.mesSequencial - b.mesSequencial);
                     let estoqueAtualProduto = Math.round(((_a = estoqueAtual.find(e => e.id_produto === idProduto)) === null || _a === void 0 ? void 0 : _a.nu_quantidade) || 0);
+                    let previsaoAnterior = null;
                     // Fallback para produtos com poucos dados
                     if (dadosProduto.length < 6) {
                         this.previsaoSimplificada(idProduto, dadosProduto, mesesFuturos, estoqueAtualProduto, previsoes);
@@ -224,10 +225,20 @@ class BI {
                             // Calcular valor total
                             const precoMedio = dadosProduto.reduce((sum, item) => sum + (item.vr_total / item.nu_quantidade), 0) / dadosProduto.length;
                             const vrTotal = Math.round(quantidade * precoMedio);
-                            // Calcular estoque e compras (arredondando para cima)
+                            // Calcular estoque necessário (10% a mais que as vendas previstas)
                             const estoqueNecessario = Math.ceil(quantidade * 1.1);
-                            const comprasNecessarias = Math.max(0, estoqueNecessario - estoqueAtualProduto);
-                            previsoes.push({
+                            // Calcular compras necessárias baseado no estoque atual
+                            let comprasNecessarias = 0;
+                            if (previsaoAnterior) {
+                                // Estoque atual = estoque do mês anterior - vendas do mês anterior
+                                const estoqueAtualizado = previsaoAnterior.estoque_necessario - previsaoAnterior.nu_quantidade;
+                                comprasNecessarias = Math.max(0, estoqueNecessario - estoqueAtualizado);
+                            }
+                            else {
+                                // Para o primeiro mês, usa o estoque inicial do banco de dados
+                                comprasNecessarias = Math.max(0, estoqueNecessario - estoqueAtualProduto);
+                            }
+                            const previsaoAtual = {
                                 id_produto: idProduto,
                                 mes: mesFuturo.mes,
                                 ano: mesFuturo.ano,
@@ -236,9 +247,9 @@ class BI {
                                 vr_total: vrTotal,
                                 estoque_necessario: estoqueNecessario,
                                 compras_necessarias: comprasNecessarias
-                            });
-                            // Atualizar estoque para o próximo mês
-                            estoqueAtualProduto = estoqueNecessario - quantidade + comprasNecessarias;
+                            };
+                            previsoes.push(previsaoAtual);
+                            previsaoAnterior = previsaoAtual;
                             // Liberar memória
                             input.dispose();
                             pred.dispose();
@@ -253,6 +264,50 @@ class BI {
                 }
                 // 5. Agrupar resultados por mês
                 const resultadoAgrupado = this.agruparPorMeses(mesesFuturos, previsoes);
+                // 6. Atualizar os dados consolidados
+                const query_delete_previtivo = `
+        DELETE FROM tb_previsao_venda;
+        DELETE FROM tb_previsao_compra;
+        DELETE FROM tb_previsao_estoque;
+        `;
+                const query_venda_insert = `
+        INSERT INTO tb_previsao_venda(mes, ano, id_produto, nu_quantidade, vr_total)
+        VALUES(?,?,?,?,?);
+        `;
+                const query_compra_insert = `
+        INSERT INTO tb_previsao_compra(mes, ano, id_produto, nu_quantidade, vr_total)
+        VALUES(?,?,?,?,?);
+        `;
+                const query_estoque_insert = `
+        INSERT INTO tb_previsao_estoque(mes, ano, id_produto, nu_quantidade, vr_total)
+        VALUES(?,?,?,?,?);
+        `;
+                if (resultadoAgrupado.length) {
+                    // Primeiro deleta todos os dados previstos antigos UMA ÚNICA VEZ
+                    yield app_1.db.run(query_delete_previtivo);
+                    // Array para armazenar todas as operações de inserção
+                    const operacoesInsercao = [];
+                    for (const element of resultadoAgrupado) {
+                        for (const produto of element.produtos) {
+                            const { id_produto, mes, ano, nu_quantidade, vr_total, compras_necessarias, estoque_necessario } = produto;
+                            // Obter preço de compra do produto
+                            const produtoInfo = yield app_1.db.get(`SELECT vr_preco_compra FROM tb_produto WHERE id_produto = ?`, id_produto);
+                            if (!produtoInfo) {
+                                console.error(`Produto ${id_produto} não encontrado`);
+                                continue;
+                            }
+                            // Calcular valores
+                            const vr_total_compra = produtoInfo.vr_preco_compra * compras_necessarias;
+                            const vr_total_estoque = vr_total - vr_total_compra;
+                            // Adicionar operações ao array
+                            operacoesInsercao.push(app_1.db.run(query_venda_insert, [mes, ano, id_produto, nu_quantidade, vr_total]), app_1.db.run(query_compra_insert, [mes, ano, id_produto, compras_necessarias, vr_total_compra]), app_1.db.run(query_estoque_insert, [mes, ano, id_produto, estoque_necessario, vr_total_estoque]));
+                        }
+                    }
+                    // Executar todas as inserções em paralelo
+                    const resultados = yield Promise.all(operacoesInsercao);
+                    // Logar resultados (opcional)
+                    console.log('Inserções realizadas:', resultados.length);
+                }
                 return {
                     result: "success",
                     message: 'Previsão calculada com sucesso',
@@ -272,7 +327,7 @@ class BI {
             }
         });
     }
-    // Métodos auxiliares atualizados:
+    // Método auxiliar atualizado para previsão simplificada
     static previsaoSimplificada(idProduto, dadosProduto, mesesFuturos, estoqueAtual, previsoes) {
         // Média dos últimos 3 meses com crescimento de 2% ao mês
         const ultimosMeses = dadosProduto.slice(-3);
@@ -282,12 +337,20 @@ class BI {
         const precoMedio = dadosProduto.length > 0 ?
             dadosProduto.reduce((sum, item) => sum + (item.vr_total / item.nu_quantidade), 0) / dadosProduto.length :
             1;
+        let previsaoAnterior = null;
         mesesFuturos.forEach(({ mes, ano, mesExt }, i) => {
             const quantidade = Math.max(1, Math.round(base * Math.pow(1.02, i + 1)));
             const vrTotal = Math.round(quantidade * precoMedio);
             const estoqueNecessario = Math.ceil(quantidade * 1.1);
-            const comprasNecessarias = Math.max(0, estoqueNecessario - estoqueAtual);
-            previsoes.push({
+            let comprasNecessarias = 0;
+            if (previsaoAnterior) {
+                const estoqueAtualizado = previsaoAnterior.estoque_necessario - previsaoAnterior.nu_quantidade;
+                comprasNecessarias = Math.max(0, estoqueNecessario - estoqueAtualizado);
+            }
+            else {
+                comprasNecessarias = Math.max(0, estoqueNecessario - estoqueAtual);
+            }
+            const previsaoAtual = {
                 id_produto: idProduto,
                 mes,
                 ano,
@@ -296,8 +359,9 @@ class BI {
                 vr_total: vrTotal,
                 estoque_necessario: estoqueNecessario,
                 compras_necessarias: comprasNecessarias
-            });
-            estoqueAtual = estoqueNecessario - quantidade + comprasNecessarias;
+            };
+            previsoes.push(previsaoAtual);
+            previsaoAnterior = previsaoAtual;
         });
     }
     static agruparPorMeses(mesesFuturos, previsoes) {
