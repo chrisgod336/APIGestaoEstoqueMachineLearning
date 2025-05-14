@@ -297,6 +297,27 @@ public static async calculateNextSixMonths() {
         // 5. Agrupar resultados por mês
         const resultadoAgrupado = this.agruparPorMeses(mesesFuturos, previsoes);
 
+        //6. Atualizar os dados consolidados
+
+        const query_delete_previtivo = `
+        DELETE FROM tb_previsao_venda;
+        DELETE FROM tb_previsao_compra;
+        DELETE FROM tb_previsao_estoque;
+        `;
+
+        const query_venda_insert = `
+        INSERT INTO tb_previsao_venda(mes, ano, id_produto, nu_quantidade, vr_total)
+        VALUES(?,?,?,?,?);
+        `;
+        const query_compra_insert = `
+        INSERT INTO tb_previsao_compra(mes, ano, id_produto, nu_quantidade, vr_total)
+        VALUES(?,?,?,?,?);
+        `;
+        const query_estoque_insert = `
+        INSERT INTO tb_previsao_estoque(mes, ano, id_produto, nu_quantidade, vr_total)
+        VALUES(?,?,?,?,?);
+        `;
+
         return {
             result: "success",
             message: 'Previsão calculada com sucesso',
