@@ -94,7 +94,7 @@ function trainModel(data) {
                 validationSplit: 0.2,
                 callbacks: {
                     onEpochEnd: (epoch, logs) => {
-                        console.log(`Epoch ${epoch}: loss = ${logs === null || logs === void 0 ? void 0 : logs.loss}`);
+                        //console.log(`Epoch ${epoch}: loss = ${logs?.loss}`);
                     }
                 }
             });

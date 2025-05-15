@@ -166,8 +166,17 @@ class BI {
 
 
 public static async calculateNextSixMonths() {
+    console.log('══════════════════════════════════════════════════');
+    console.log(' INICIANDO PROCESSO DE PREVISÃO PARA OS PRÓXIMOS 6 MESES ');
+    console.log('══════════════════════════════════════════════════\n');
+
     try {
         // 1. Obter dados históricos
+        console.log('🔍 FASE 1: OBTENÇÃO DE DADOS HISTÓRICOS');
+        console.log('----------------------------------------');
+        console.log('📊 Buscando dados de vendas históricas e estoque atual...');
+        
+        const startTime = Date.now();
         const [histData, estoqueAtual] = await Promise.all([
             db.all(`
                 SELECT 
@@ -184,9 +193,16 @@ public static async calculateNextSixMonths() {
             db.all(`SELECT id_produto, SUM(nu_quantidade) as nu_quantidade FROM tb_estoque GROUP BY id_produto;`)
         ]);
 
+        console.log(`✅ Dados obtidos em ${(Date.now() - startTime)/1000}s`);
+        console.log(`📦 Total de registros históricos: ${histData.length}`);
+        console.log(`📦 Produtos com estoque atual: ${estoqueAtual.length}\n`);
+
         // 2. Processar dados para análise temporal
         const produtos = [...new Set(histData.map(item => item.id_produto))];
         const previsoes: Previsao[] = [];
+
+        console.log('🔍 LISTA DE PRODUTOS PARA PREVISÃO:');
+        console.table(produtos.map(p => ({ 'ID Produto': p })));
 
         // 3. Calcular próximos 6 meses
         const dataAtual = new Date();
@@ -197,12 +213,25 @@ public static async calculateNextSixMonths() {
                 mes: data.getMonth() + 1,
                 ano: data.getFullYear(),
                 mesExt: this.mesExt(data.getMonth() + 1),
-                mesSequencial: (data.getFullYear() * 12) + data.getMonth() // Sequência única de meses
+                mesSequencial: (data.getFullYear() * 12) + data.getMonth()
             };
         });
 
+        console.log('\n📅 PERÍODOS PARA PREVISÃO:');
+        console.table(mesesFuturos.map(m => ({
+            Mês: m.mesExt,
+            Ano: m.ano,
+            'Mês Sequencial': m.mesSequencial
+        })));
+
         // 4. Para cada produto, treinar modelo e fazer previsão
+        console.log('\n🔍 FASE 2: PROCESSAMENTO POR PRODUTO');
+        console.log('-------------------------------------');
+        
         for (const idProduto of produtos) {
+            const produtoStartTime = Date.now();
+            console.log(`\n🔄 Processando produto ${idProduto}...`);
+
             const dadosProduto = histData
                 .filter(item => item.id_produto === idProduto)
                 .map(item => ({
@@ -211,20 +240,32 @@ public static async calculateNextSixMonths() {
                     ano: parseInt(item.ano),
                     nu_quantidade: parseInt(item.nu_quantidade),
                     vr_total: parseFloat(item.vr_total),
-                    mesSequencial: (parseInt(item.ano) * 12) + parseInt(item.mes) - 1 // Sequência única de meses
+                    mesSequencial: (parseInt(item.ano) * 12) + parseInt(item.mes) - 1 
                 }))
                 .sort((a, b) => a.mesSequencial - b.mesSequencial);
+
+            console.log(`📈 Dados históricos do produto ${idProduto}:`);
+            console.table(dadosProduto.map(d => ({
+                Mês: d.mes,
+                Ano: d.ano,
+                Quantidade: d.nu_quantidade,
+                'Valor Total': d.vr_total
+            })));
 
             let estoqueAtualProduto = Math.round(estoqueAtual.find(e => e.id_produto === idProduto)?.nu_quantidade || 0);
             let previsaoAnterior: Previsao | null = null;
 
             // Fallback para produtos com poucos dados
             if (dadosProduto.length < 6) {
+                console.log(`⚠️  Produto ${idProduto} tem apenas ${dadosProduto.length} registros - usando método simplificado`);
                 this.previsaoSimplificada(idProduto, dadosProduto, mesesFuturos, estoqueAtualProduto, previsoes);
+                console.log(`⏱  Tempo processamento produto ${idProduto}: ${(Date.now() - produtoStartTime)/1000}s`);
                 continue;
             }
 
             try {
+                console.log(`🧠 Treinando modelo LSTM para produto ${idProduto}...`);
+
                 // Preparar dados para o modelo LSTM
                 const dadosTreino = dadosProduto.map(item => ({
                     mes_sequencial: item.mesSequencial,
@@ -234,9 +275,14 @@ public static async calculateNextSixMonths() {
 
                 // Treinar o modelo
                 const { model, minMonth, maxMonth, minQuantity, maxQuantity } = await trainModel(dadosTreino);
+                console.log(`✅ Modelo treinado para produto ${idProduto}`);
 
                 // Fazer previsões para cada mês futuro
+                console.log(`🔮 Gerando previsões para produto ${idProduto}...`);
+                
                 for (const mesFuturo of mesesFuturos) {
+                    const mesStartTime = Date.now();
+                    
                     // Normalizar o mês sequencial
                     const mesNormalizado = this.normalizar(mesFuturo.mesSequencial, minMonth, maxMonth);
                     
@@ -255,6 +301,7 @@ public static async calculateNextSixMonths() {
                             const mediaMes = historicoMes.reduce((sum, item) => sum + item.nu_quantidade, 0) / historicoMes.length;
                             // Combinar previsão LSTM (60%) com sazonalidade histórica (40%)
                             quantidade = (quantidade * 0.6) + (mediaMes * 0.4);
+                            console.log(`🔄 Ajuste sazonal para ${mesFuturo.mesExt}/${mesFuturo.ano}: +40% média histórica`);
                         }
                     }
 
@@ -294,6 +341,15 @@ public static async calculateNextSixMonths() {
                     previsoes.push(previsaoAtual);
                     previsaoAnterior = previsaoAtual;
                     
+                    console.log(`📅 Previsão ${mesFuturo.mesExt}/${mesFuturo.ano}:`);
+                    console.table([{
+                        'Quantidade Prevista': quantidade,
+                        'Valor Total Previsto': vrTotal,
+                        'Estoque Necessário': estoqueNecessario,
+                        'Compras Necessárias': comprasNecessarias,
+                        'Tempo Processamento': `${(Date.now() - mesStartTime)}ms`
+                    }]);
+
                     // Liberar memória
                     input.dispose();
                     pred.dispose();
@@ -301,16 +357,35 @@ public static async calculateNextSixMonths() {
 
                 // Liberar modelo
                 model.dispose();
+                console.log(`⏱  Tempo total produto ${idProduto}: ${(Date.now() - produtoStartTime)/1000}s`);
             } catch (error) {
-                console.error(`Erro no modelo para produto ${idProduto}:`, error);
+                console.error(`❌ Erro no modelo para produto ${idProduto}:`, error);
+                console.log(`🔄 Usando método simplificado como fallback`);
                 this.previsaoSimplificada(idProduto, dadosProduto, mesesFuturos, estoqueAtualProduto, previsoes);
             }
         }
 
         // 5. Agrupar resultados por mês
+        console.log('\n🔍 FASE 3: CONSOLIDAÇÃO DOS RESULTADOS');
+        console.log('-------------------------------------');
         const resultadoAgrupado = this.agruparPorMeses(mesesFuturos, previsoes);
 
+        console.log('\n📊 RESUMO DAS PREVISÕES:');
+        resultadoAgrupado.forEach(mes => {
+            console.log(`\n📅 ${mes.mesExt}/${mes.ano}:`);
+            console.table(mes.produtos.map(p => ({
+                'ID Produto': p.id_produto,
+                'Quantidade': p.nu_quantidade,
+                'Valor Total': p.vr_total,
+                'Compras': p.compras_necessarias,
+                'Estoque': p.estoque_necessario
+            })));
+        });
+
         // 6. Atualizar os dados consolidados
+        console.log('\n🔍 FASE 4: PERSISTÊNCIA NO BANCO DE DADOS');
+        console.log('-----------------------------------------');
+        
         const query_delete_previtivo = `
         DELETE FROM tb_previsao_venda;
         DELETE FROM tb_previsao_compra;
@@ -331,11 +406,12 @@ public static async calculateNextSixMonths() {
         `;
 
         if (resultadoAgrupado.length) {
-            // Primeiro deleta todos os dados previstos antigos UMA ÚNICA VEZ
+            console.log('🧹 Limpando previsões anteriores...');
             await db.run(query_delete_previtivo);
             
-            // Array para armazenar todas as operações de inserção
+            console.log('📝 Inserindo novas previsões...');
             const operacoesInsercao = [];
+            let totalInsercoes = 0;
             
             for (const element of resultadoAgrupado) {
                 for (const produto of element.produtos) {
@@ -344,7 +420,7 @@ public static async calculateNextSixMonths() {
                     // Obter preço de compra do produto
                     const produtoInfo = await db.get(`SELECT vr_preco_compra FROM tb_produto WHERE id_produto = ?`, id_produto);
                     if (!produtoInfo) {
-                        console.error(`Produto ${id_produto} não encontrado`);
+                        console.error(`❌ Produto ${id_produto} não encontrado`);
                         continue;
                     }
                     
@@ -358,15 +434,19 @@ public static async calculateNextSixMonths() {
                         db.run(query_compra_insert, [mes, ano, id_produto, compras_necessarias, vr_total_compra]),
                         db.run(query_estoque_insert, [mes, ano, id_produto, estoque_necessario, vr_total_estoque])
                     );
+                    totalInsercoes += 3;
                 }
             }
             
             // Executar todas as inserções em paralelo
             const resultados = await Promise.all(operacoesInsercao);
             
-            // Logar resultados
-            console.log('Inserções realizadas:', resultados.length);
+            console.log(`✅ ${totalInsercoes} registros inseridos com sucesso`);
         }
+
+        console.log('\n══════════════════════════════════════════════════');
+        console.log(' PROCESSO DE PREVISÃO CONCLUÍDO COM SUCESSO ');
+        console.log('══════════════════════════════════════════════════\n');
 
         return {
             result: "success",
@@ -379,7 +459,13 @@ public static async calculateNextSixMonths() {
         };
 
     } catch (error: any) {
-        console.error('Erro em calculateNextSixMonths:', error);
+        console.error('\n❌❌❌ ERRO NO PROCESSO DE PREVISÃO ❌❌❌');
+        console.error('Detalhes do erro:', error);
+        console.error('Stack trace:', error.stack);
+        console.log('\n══════════════════════════════════════════════════');
+        console.log(' PROCESSO DE PREVISÃO FINALIZADO COM ERROS ');
+        console.log('══════════════════════════════════════════════════\n');
+
         return {
             result: "error",
             message: error?.message || 'Erro ao calcular previsão'

@@ -77,7 +77,7 @@ export async function trainModel(data: TrainingData[]): Promise<TrainedModel> {
             validationSplit: 0.2,
             callbacks: {
                 onEpochEnd: (epoch, logs) => {
-                    console.log(`Epoch ${epoch}: loss = ${logs?.loss}`);
+                    //console.log(`Epoch ${epoch}: loss = ${logs?.loss}`);
                 }
             }
         });

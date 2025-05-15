@@ -8,15 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const BIModel_1 = __importDefault(require("../models/BI/BIModel"));
 class ProcessadorAutomatico {
     constructor() {
         this.emExecucao = false;
         this.intervaloMinimo = 10000;
+        this.apiUrl = 'http://localhost:3000/BI/calculateNextSixMonths';
     }
     processar() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -37,7 +33,18 @@ class ProcessadorAutomatico {
     }
     executarTarefa() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield BIModel_1.default.calculateNextSixMonths();
+            const response = yield fetch(this.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer seu-token'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Erro na requisição: ${response.status}`);
+            }
+            const data = yield response.json();
+            console.log('Resposta da API:', data);
         });
     }
 }
