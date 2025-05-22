@@ -17,6 +17,10 @@ import CompraRoutes from './src/routes/CompraRoutes/CompraRoutes';
 import CompraProdutoRoutes from './src/routes/CompraRoutes/CompraProdutoRoutes';
 import BIRoutes from './src/routes/BIRoutes/BIRoutes';
 
+import {RegressaoLinear} from './src/_test/testRegressaLinear';
+import { ArvoreDecisao } from './src/_test/testArvoreDecisao';
+import { RedeNeural } from './src/_test/testRedeNeural';
+
 // Configuração inicial
 dotenv.config();
 const app = express();
@@ -87,6 +91,10 @@ async function startServer() {
   try {
     db = await setupDatabase();
     await createTables(db);
+
+    //RegressaoLinear(db);
+    //ArvoreDecisao(db);
+    //RedeNeural(db);
     
     app.listen(PORT, () => {
       console.log(`Servidor rodando em http://localhost:${PORT}`);
@@ -100,3 +108,4 @@ async function startServer() {
 startServer();
 
 export { app, db };
+

@@ -30,6 +30,7 @@ const VendaProdutoRoutes_1 = __importDefault(require("./src/routes/VendaRoutes/V
 const CompraRoutes_1 = __importDefault(require("./src/routes/CompraRoutes/CompraRoutes"));
 const CompraProdutoRoutes_1 = __importDefault(require("./src/routes/CompraRoutes/CompraProdutoRoutes"));
 const BIRoutes_1 = __importDefault(require("./src/routes/BIRoutes/BIRoutes"));
+const testRegressaLinear_1 = require("./src/_test/testRegressaLinear");
 // Configuração inicial
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -88,6 +89,9 @@ function startServer() {
         try {
             exports.db = db = yield setupDatabase();
             yield createTables(db);
+            (0, testRegressaLinear_1.RegressaoLinear)(db);
+            //ArvoreDecisao(db);
+            //RedeNeural(db);
             app.listen(PORT, () => {
                 console.log(`Servidor rodando em http://localhost:${PORT}`);
             });

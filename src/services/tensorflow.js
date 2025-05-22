@@ -88,7 +88,7 @@ function trainModel(data) {
             });
             // Treinar com mais épocas e callbacks
             yield model.fit(xs, ys, {
-                epochs: 200,
+                epochs: 1, //200,
                 batchSize: 1,
                 shuffle: false,
                 validationSplit: 0.2,
