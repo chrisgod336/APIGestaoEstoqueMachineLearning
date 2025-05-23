@@ -1,99 +1,115 @@
-import * as tf from '@tensorflow/tfjs';
+// import * as tf from '@tensorflow/tfjs';
 
-// Interface para os dados de treino
-interface TrainingData {
-  mes_sequencial: number;
-  nu_quantidade: number;
-}
+// // Interface para os dados de treino
+// interface TrainingData {
+//   mes_sequencial: number;
+//   nu_quantidade: number;
+// }
 
-// Interface para o modelo treinado
-export interface TrainedModel {
-  model: tf.LayersModel;
-  minMonth: number;  
-  maxMonth: number;
-  minQuantity: number;
-  maxQuantity: number;
-}
+// // Interface para o modelo treinado
+// export interface TrainedModel {
+//   model: tf.LayersModel;
+//   minMonth: number;  
+//   maxMonth: number;
+//   minQuantity: number;
+//   maxQuantity: number;
+// }
 
-export async function trainModel(data: TrainingData[]): Promise<TrainedModel> {
-    // Verificação robusta dos dados
-    if (!data || data.length < 6) {
-        throw new Error('São necessários pelo menos 6 meses de dados para treinamento');
-    }
+// export async function trainModel(data: TrainingData[]): Promise<TrainedModel> {
+//     // Verificação robusta dos dados
+//     if (!data || data.length < 6) {
+//         throw new Error('São necessários pelo menos 6 meses de dados para treinamento');
+//     }
 
-    // Ordenar por mes_sequencial
-    data.sort((a, b) => a.mes_sequencial - b.mes_sequencial);
+//     // Ordenar por mes_sequencial
+//     data.sort((a, b) => a.mes_sequencial - b.mes_sequencial);
 
-    // Extrair sequências temporais
-    const months = data.map(item => item.mes_sequencial);
-    const quantities = data.map(item => item.nu_quantidade);
+//     // Extrair sequências temporais
+//     const months = data.map(item => item.mes_sequencial);
+//     const quantities = data.map(item => item.nu_quantidade);
 
-    // Calcular estatísticas para normalização
-    const minMonth = Math.min(...months);
-    const maxMonth = Math.max(...months);
-    const minQuantity = Math.min(...quantities);
-    const maxQuantity = Math.max(...quantities);
+//     // Calcular estatísticas para normalização
+//     const minMonth = Math.min(...months);
+//     const maxMonth = Math.max(...months);
+//     const minQuantity = Math.min(...quantities);
+//     const maxQuantity = Math.max(...quantities);
 
-    try {
-        // Preparar dados de treino (sequências temporais)
-        const xsData = data.map(item => [
-            [(item.mes_sequencial - minMonth) / (maxMonth - minMonth)]
-        ]);
+//     try {
+//         // Preparar dados de treino (sequências temporais)
+//         const xsData = data.map(item => [
+//             [(item.mes_sequencial - minMonth) / (maxMonth - minMonth)]
+//         ]);
         
-        const ysData = data.map(item => 
-            (item.nu_quantidade - minQuantity) / (maxQuantity - minQuantity)
-        );
+//         const ysData = data.map(item => 
+//             (item.nu_quantidade - minQuantity) / (maxQuantity - minQuantity)
+//         );
 
-        // Criar tensores com formato adequado para LSTM [samples, timeSteps, features]
-        const xs = tf.tensor3d(xsData, [xsData.length, 1, 1]);
-        const ys = tf.tensor2d(ysData, [ysData.length, 1]);
+//         // Criar tensores com formato adequado para LSTM [samples, timeSteps, features]
+//         const xs = tf.tensor3d(xsData, [xsData.length, 1, 1]);
+//         const ys = tf.tensor2d(ysData, [ysData.length, 1]);
 
-        // Criar modelo LSTM mais sofisticado
-        const model = tf.sequential();
+//         // Criar modelo LSTM mais sofisticado
+//         const model = tf.sequential();
         
-        // Camada LSTM com mais neurônios e returnSequences
-        model.add(tf.layers.lstm({
-            units: 64,
-            inputShape: [1, 1],
-            returnSequences: false
-        }));
+//         // Camada LSTM com mais neurônios e returnSequences
+//         model.add(tf.layers.lstm({
+//             units: 64,
+//             inputShape: [1, 1],
+//             returnSequences: false
+//         }));
         
-        // Camadas densas para processamento adicional
-        model.add(tf.layers.dense({units: 32, activation: 'relu'}));
-        model.add(tf.layers.dense({units: 1}));
+//         // Camadas densas para processamento adicional
+//         model.add(tf.layers.dense({units: 32, activation: 'relu'}));
+//         model.add(tf.layers.dense({units: 1}));
 
-        // Compilar com otimizador e taxa de aprendizado ajustada
-        model.compile({
-            optimizer: tf.train.adam(0.01),
-            loss: 'meanSquaredError',
-            metrics: ['mae']
-        });
+//         // Compilar com otimizador e taxa de aprendizado ajustada
+//         model.compile({
+//             optimizer: tf.train.adam(0.01),
+//             loss: 'meanSquaredError',
+//             metrics: ['mae']
+//         });
 
-        // Treinar com mais épocas e callbacks
-        await model.fit(xs, ys, {
-            epochs: 200,
-            batchSize: 1,
-            shuffle: false,
-            validationSplit: 0.2,
-            callbacks: {
-                onEpochEnd: (epoch, logs) => {
-                    //console.log(`Epoch ${epoch}: loss = ${logs?.loss}`);
-                }
-            }
-        });
+//         // Treinar com mais épocas e callbacks
+//         await model.fit(xs, ys, {
+//             epochs: 200,
+//             batchSize: 1,
+//             shuffle: false,
+//             validationSplit: 0.2,
+//             callbacks: {
+//                 onEpochEnd: (epoch, logs) => {
+//                     //console.log(`Epoch ${epoch}: loss = ${logs?.loss}`);
+//                 }
+//             }
+//         });
 
-        // Liberar memória
-        tf.dispose([xs, ys]);
+//         // Liberar memória
+//         tf.dispose([xs, ys]);
 
-        return {
-            model,
-            minMonth,
-            maxMonth,
-            minQuantity,
-            maxQuantity
-        };
-    } catch (error) {
-        console.error('Erro no treinamento:', error);
-        throw new Error('Falha ao treinar modelo');
-    }
+//         return {
+//             model,
+//             minMonth,
+//             maxMonth,
+//             minQuantity,
+//             maxQuantity
+//         };
+//     } catch (error) {
+//         console.error('Erro no treinamento:', error);
+//         throw new Error('Falha ao treinar modelo');
+//     }
+// }
+
+const mlCart = require('ml-regression') as any;
+const SimpleLinearRegression = mlCart.SimpleLinearRegression;
+
+export function trainModel(data: { mes_sequencial: number, nu_quantidade: number }[]) {
+  const X = data.map(d => d.mes_sequencial);
+  const Y = data.map(d => d.nu_quantidade);
+
+  const model = new SimpleLinearRegression(X, Y);
+
+  return {
+    predict: (x: number) => model.predict(x),
+    coeficiente: model.slope,
+    intercepto: model.intercept
+  };
 }

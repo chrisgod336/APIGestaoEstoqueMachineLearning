@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -44,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
 const tensorflow_1 = require("../../services/tensorflow");
-const tf = __importStar(require("@tensorflow/tfjs"));
 class BI {
     constructor(mes, ano, id_produto, nu_quantidade, vr_total) {
         this.mes = mes;
@@ -150,35 +116,35 @@ class BI {
             console.log(' INICIANDO PROCESSO DE PREVISÃO PARA OS PRÓXIMOS 6 MESES ');
             console.log('══════════════════════════════════════════════════\n');
             try {
-                // 1. Obter dados históricos
+                // 1. Obter dados históricos (mantido igual)
                 console.log('🔍 FASE 1: OBTENÇÃO DE DADOS HISTÓRICOS');
                 console.log('----------------------------------------');
                 console.log('📊 Buscando dados de vendas históricas e estoque atual...');
                 const startTime = Date.now();
                 const [histData, estoqueAtual] = yield Promise.all([
                     app_1.db.all(`
-                SELECT 
-                    p.id_produto,
-                    strftime('%m', v.dt_venda) as mes,
-                    strftime('%Y', v.dt_venda) as ano,
-                    SUM(p.nu_quantidade) as nu_quantidade,
-                    SUM(p.vr_total) as vr_total
-                FROM tb_venda_produto p
-                JOIN tb_venda v ON p.id_venda = v.id_venda
-                GROUP BY p.id_produto, mes, ano
-                ORDER BY p.id_produto, ano, mes;
-            `),
+                    SELECT 
+                        p.id_produto,
+                        strftime('%m', v.dt_venda) as mes,
+                        strftime('%Y', v.dt_venda) as ano,
+                        SUM(p.nu_quantidade) as nu_quantidade,
+                        SUM(p.vr_total) as vr_total
+                    FROM tb_venda_produto p
+                    JOIN tb_venda v ON p.id_venda = v.id_venda
+                    GROUP BY p.id_produto, mes, ano
+                    ORDER BY p.id_produto, ano, mes;
+                `),
                     app_1.db.all(`SELECT id_produto, SUM(nu_quantidade) as nu_quantidade FROM tb_estoque GROUP BY id_produto;`)
                 ]);
                 console.log(`✅ Dados obtidos em ${(Date.now() - startTime) / 1000}s`);
                 console.log(`📦 Total de registros históricos: ${histData.length}`);
                 console.log(`📦 Produtos com estoque atual: ${estoqueAtual.length}\n`);
-                // 2. Processar dados para análise temporal
+                // 2. Processar dados para análise temporal (mantido igual)
                 const produtos = [...new Set(histData.map(item => item.id_produto))];
                 const previsoes = [];
                 console.log('🔍 LISTA DE PRODUTOS PARA PREVISÃO:');
                 console.table(produtos.map(p => ({ 'ID Produto': p })));
-                // 3. Calcular próximos 6 meses
+                // 3. Calcular próximos 6 meses (mantido igual)
                 const dataAtual = new Date();
                 const mesesFuturos = Array.from({ length: 6 }, (_, i) => {
                     const data = new Date(dataAtual);
@@ -196,7 +162,7 @@ class BI {
                     Ano: m.ano,
                     'Mês Sequencial': m.mesSequencial
                 })));
-                // 4. Para cada produto, treinar modelo e fazer previsão
+                // 4. Para cada produto, treinar modelo e fazer previsão (MODIFICADO)
                 console.log('\n🔍 FASE 2: PROCESSAMENTO POR PRODUTO');
                 console.log('-------------------------------------');
                 for (const idProduto of produtos) {
@@ -215,7 +181,7 @@ class BI {
                     })));
                     let estoqueAtualProduto = Math.round(((_a = estoqueAtual.find(e => e.id_produto === idProduto)) === null || _a === void 0 ? void 0 : _a.nu_quantidade) || 0);
                     let previsaoAnterior = null;
-                    // Fallback para produtos com poucos dados
+                    // Fallback para produtos com poucos dados (mantido igual)
                     if (dadosProduto.length < 6) {
                         console.log(`⚠️  Produto ${idProduto} tem apenas ${dadosProduto.length} registros - usando método simplificado`);
                         this.previsaoSimplificada(idProduto, dadosProduto, mesesFuturos, estoqueAtualProduto, previsoes);
@@ -223,34 +189,28 @@ class BI {
                         continue;
                     }
                     try {
-                        console.log(`🧠 Treinando modelo LSTM para produto ${idProduto}...`);
-                        // Preparar dados para o modelo LSTM
+                        console.log(`📈 Treinando modelo de regressão linear para produto ${idProduto}...`);
+                        // Preparar dados para o modelo (simplificado)
                         const dadosTreino = dadosProduto.map(item => ({
                             mes_sequencial: item.mesSequencial,
-                            nu_quantidade: item.nu_quantidade,
-                            vr_total: item.vr_total
+                            nu_quantidade: item.nu_quantidade
                         }));
-                        // Treinar o modelo
-                        const { model, minMonth, maxMonth, minQuantity, maxQuantity } = yield (0, tensorflow_1.trainModel)(dadosTreino);
+                        // Treinar o modelo (nova versão simplificada)
+                        const model = (0, tensorflow_1.trainModel)(dadosTreino);
                         console.log(`✅ Modelo treinado para produto ${idProduto}`);
-                        // Fazer previsões para cada mês futuro
+                        console.log(`📊 Coeficiente: ${model.coeficiente}, Intercepto: ${model.intercepto}`);
+                        // Fazer previsões para cada mês futuro (simplificado)
                         console.log(`🔮 Gerando previsões para produto ${idProduto}...`);
                         for (const mesFuturo of mesesFuturos) {
                             const mesStartTime = Date.now();
-                            // Normalizar o mês sequencial
-                            const mesNormalizado = this.normalizar(mesFuturo.mesSequencial, minMonth, maxMonth);
-                            // Fazer previsão
-                            const input = tf.tensor3d([[[mesNormalizado]]], [1, 1, 1]);
-                            const pred = model.predict(input);
-                            const predData = yield pred.data();
-                            // Desnormalizar a quantidade prevista
-                            let quantidade = this.desnormalizar(predData[0], minQuantity, maxQuantity);
+                            // Fazer previsão diretamente com o modelo linear
+                            let quantidade = model.predict(mesFuturo.mesSequencial);
                             // Ajustar sazonalidade (se houver dados suficientes)
                             if (dadosProduto.length >= 12) {
                                 const historicoMes = dadosProduto.filter(item => item.mes === mesFuturo.mes);
                                 if (historicoMes.length > 0) {
                                     const mediaMes = historicoMes.reduce((sum, item) => sum + item.nu_quantidade, 0) / historicoMes.length;
-                                    // Combinar previsão LSTM (60%) com sazonalidade histórica (40%)
+                                    // Combinar previsão linear (60%) com sazonalidade histórica (40%)
                                     quantidade = (quantidade * 0.6) + (mediaMes * 0.4);
                                     console.log(`🔄 Ajuste sazonal para ${mesFuturo.mesExt}/${mesFuturo.ano}: +40% média histórica`);
                                 }
@@ -293,12 +253,7 @@ class BI {
                                     'Compras Necessárias': comprasNecessarias,
                                     'Tempo Processamento': `${(Date.now() - mesStartTime)}ms`
                                 }]);
-                            // Liberar memória
-                            input.dispose();
-                            pred.dispose();
                         }
-                        // Liberar modelo
-                        model.dispose();
                         console.log(`⏱  Tempo total produto ${idProduto}: ${(Date.now() - produtoStartTime) / 1000}s`);
                     }
                     catch (error) {
@@ -307,7 +262,7 @@ class BI {
                         this.previsaoSimplificada(idProduto, dadosProduto, mesesFuturos, estoqueAtualProduto, previsoes);
                     }
                 }
-                // 5. Agrupar resultados por mês
+                // 5. Agrupar resultados por mês (mantido igual)
                 console.log('\n🔍 FASE 3: CONSOLIDAÇÃO DOS RESULTADOS');
                 console.log('-------------------------------------');
                 const resultadoAgrupado = this.agruparPorMeses(mesesFuturos, previsoes);
@@ -322,26 +277,26 @@ class BI {
                         'Estoque': p.estoque_necessario
                     })));
                 });
-                // 6. Atualizar os dados consolidados
+                // 6. Atualizar os dados consolidados (mantido igual)
                 console.log('\n🔍 FASE 4: PERSISTÊNCIA NO BANCO DE DADOS');
                 console.log('-----------------------------------------');
                 const query_delete_previtivo = `
-        DELETE FROM tb_previsao_venda;
-        DELETE FROM tb_previsao_compra;
-        DELETE FROM tb_previsao_estoque;
-        `;
+            DELETE FROM tb_previsao_venda;
+            DELETE FROM tb_previsao_compra;
+            DELETE FROM tb_previsao_estoque;
+            `;
                 const query_venda_insert = `
-        INSERT INTO tb_previsao_venda(mes, ano, id_produto, nu_quantidade, vr_total)
-        VALUES(?,?,?,?,?);
-        `;
+            INSERT INTO tb_previsao_venda(mes, ano, id_produto, nu_quantidade, vr_total)
+            VALUES(?,?,?,?,?);
+            `;
                 const query_compra_insert = `
-        INSERT INTO tb_previsao_compra(mes, ano, id_produto, nu_quantidade, vr_total)
-        VALUES(?,?,?,?,?);
-        `;
+            INSERT INTO tb_previsao_compra(mes, ano, id_produto, nu_quantidade, vr_total)
+            VALUES(?,?,?,?,?);
+            `;
                 const query_estoque_insert = `
-        INSERT INTO tb_previsao_estoque(mes, ano, id_produto, nu_quantidade, vr_total)
-        VALUES(?,?,?,?,?);
-        `;
+            INSERT INTO tb_previsao_estoque(mes, ano, id_produto, nu_quantidade, vr_total)
+            VALUES(?,?,?,?,?);
+            `;
                 if (resultadoAgrupado.length) {
                     console.log('🧹 Limpando previsões anteriores...');
                     yield app_1.db.run(query_delete_previtivo);
