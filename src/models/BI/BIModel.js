@@ -58,13 +58,20 @@ class BI {
                     const { mes, ano } = this.adicionarMeses(dataAtual, i + 1);
                     return { mes, ano, mesExt: this.mesExt(mes) };
                 });
+                const strProximos6Meses = `${proximos6Meses[0].mes}/${proximos6Meses[0].ano}, ${proximos6Meses[1].mes}/${proximos6Meses[1].ano}, ${proximos6Meses[2].mes}/${proximos6Meses[2].ano}, ${proximos6Meses[3].mes}/${proximos6Meses[3].ano}, ${proximos6Meses[4].mes}/${proximos6Meses[4].ano}, ${proximos6Meses[5].mes}/${proximos6Meses[5].ano}`;
                 const queries = {
                     compra: `SELECT *, (SELECT tx_nome FROM tb_produto WHERE id_produto = tb_previsao_compra.id_produto) AS nome_produto 
-                         FROM tb_previsao_compra WHERE id_produto IN (${query_produtos}) ORDER BY mes, ano, id_produto`,
+                         FROM tb_previsao_compra WHERE id_produto IN (${query_produtos}) 
+                         AND mes/ano IN (${strProximos6Meses})
+                         ORDER BY mes, ano, id_produto`,
                     venda: `SELECT *, (SELECT tx_nome FROM tb_produto WHERE id_produto = tb_previsao_venda.id_produto) AS nome_produto 
-                        FROM tb_previsao_venda WHERE id_produto IN (${query_produtos}) ORDER BY mes, ano, id_produto`,
+                        FROM tb_previsao_venda WHERE id_produto IN (${query_produtos}) 
+                        AND mes/ano IN (${strProximos6Meses})
+                        ORDER BY mes, ano, id_produto`,
                     estoque: `SELECT *, (SELECT tx_nome FROM tb_produto WHERE id_produto = tb_previsao_estoque.id_produto) AS nome_produto 
-                          FROM tb_previsao_estoque WHERE id_produto IN (${query_produtos}) ORDER BY mes, ano, id_produto`
+                          FROM tb_previsao_estoque WHERE id_produto IN (${query_produtos}) 
+                          AND mes/ano IN (${strProximos6Meses})
+                          ORDER BY mes, ano, id_produto`
                 };
                 const [response_compra, response_venda, response_estoque] = yield Promise.all([
                     app_1.db.all(queries.compra),
@@ -76,11 +83,17 @@ class BI {
                 }
                 const sumQueries = {
                     compra: `SELECT mes, ano, SUM(nu_quantidade) AS nu_quantidade, SUM(vr_total) AS vr_total 
-                         FROM tb_previsao_compra WHERE id_produto IN (${query_produtos}) GROUP BY mes, ano ORDER BY mes, ano`,
+                         FROM tb_previsao_compra WHERE id_produto IN (${query_produtos}) 
+                         AND mes/ano IN (${strProximos6Meses})
+                         GROUP BY mes, ano ORDER BY mes, ano`,
                     venda: `SELECT mes, ano, SUM(nu_quantidade) AS nu_quantidade, SUM(vr_total) AS vr_total 
-                        FROM tb_previsao_venda WHERE id_produto IN (${query_produtos}) GROUP BY mes, ano ORDER BY mes, ano`,
+                        FROM tb_previsao_venda WHERE id_produto IN (${query_produtos}) 
+                        AND mes/ano IN (${strProximos6Meses})
+                        GROUP BY mes, ano ORDER BY mes, ano`,
                     estoque: `SELECT mes, ano, SUM(nu_quantidade) AS nu_quantidade, SUM(vr_total) AS vr_total 
-                          FROM tb_previsao_estoque WHERE id_produto IN (${query_produtos}) GROUP BY mes, ano ORDER BY mes, ano`
+                          FROM tb_previsao_estoque WHERE id_produto IN (${query_produtos}) 
+                          AND mes/ano IN (${strProximos6Meses})
+                          GROUP BY mes, ano ORDER BY mes, ano`
                 };
                 const [response_sum_compra, response_sum_venda, response_sum_estoque] = yield Promise.all([
                     app_1.db.all(sumQueries.compra),
@@ -115,6 +128,8 @@ class BI {
             console.log('══════════════════════════════════════════════════');
             console.log(' INICIANDO PROCESSO DE PREVISÃO PARA OS PRÓXIMOS 6 MESES ');
             console.log('══════════════════════════════════════════════════\n');
+            // Iniciar transação
+            yield app_1.db.run('BEGIN TRANSACTION');
             try {
                 // 1. Obter dados históricos (mantido igual)
                 console.log('🔍 FASE 1: OBTENÇÃO DE DADOS HISTÓRICOS');
@@ -278,53 +293,47 @@ class BI {
                     })));
                 });
                 // 6. Atualizar os dados consolidados (mantido igual)
-                console.log('\n🔍 FASE 4: PERSISTÊNCIA NO BANCO DE DADOS');
+                console.log('\n🔍 FASE 4: SALVAR NO BANCO DE DADOS');
                 console.log('-----------------------------------------');
-                const query_delete_previtivo = `
-            DELETE FROM tb_previsao_venda;
-            DELETE FROM tb_previsao_compra;
-            DELETE FROM tb_previsao_estoque;
-            `;
-                const query_venda_insert = `
-            INSERT INTO tb_previsao_venda(mes, ano, id_produto, nu_quantidade, vr_total)
-            VALUES(?,?,?,?,?);
-            `;
-                const query_compra_insert = `
-            INSERT INTO tb_previsao_compra(mes, ano, id_produto, nu_quantidade, vr_total)
-            VALUES(?,?,?,?,?);
-            `;
-                const query_estoque_insert = `
-            INSERT INTO tb_previsao_estoque(mes, ano, id_produto, nu_quantidade, vr_total)
-            VALUES(?,?,?,?,?);
-            `;
-                if (resultadoAgrupado.length) {
-                    console.log('🧹 Limpando previsões anteriores...');
-                    yield app_1.db.run(query_delete_previtivo);
-                    console.log('📝 Inserindo novas previsões...');
-                    const operacoesInsercao = [];
-                    let totalInsercoes = 0;
-                    for (const element of resultadoAgrupado) {
-                        for (const produto of element.produtos) {
-                            const { id_produto, mes, ano, nu_quantidade, vr_total, compras_necessarias, estoque_necessario } = produto;
-                            // Obter preço de compra do produto
-                            const produtoInfo = yield app_1.db.get(`SELECT vr_preco_compra FROM tb_produto WHERE id_produto = ?`, id_produto);
-                            if (!produtoInfo) {
-                                console.error(`❌ Produto ${id_produto} não encontrado`);
-                                continue;
-                            }
-                            // Calcular valores
+                // Calcular os próximos 6 meses que serão atualizados
+                const mesesParaLimpar = Array.from({ length: 6 }, (_, i) => {
+                    const data = new Date(dataAtual);
+                    data.setMonth(data.getMonth() + i + 1);
+                    return {
+                        mes: data.getMonth() + 1,
+                        ano: data.getFullYear()
+                    };
+                });
+                console.log('🧹 Limpando previsões anteriores...', mesesParaLimpar.map(m => `${m.mes}/${m.ano}`).join(', '));
+                // Limpar as três tabelas de forma atômica
+                yield Promise.all([
+                    app_1.db.run(`DELETE FROM tb_previsao_venda`),
+                    app_1.db.run(`DELETE FROM tb_previsao_compra`),
+                    app_1.db.run(`DELETE FROM tb_previsao_estoque`),
+                    app_1.db.run(`DELETE FROM tb_previsao_venda;
+                     DELETE FROM tb_previsao_compra;
+                     DELETE FROM tb_previsao_estoque;`)
+                ]);
+                console.log('📝 Inserindo novas previsões...');
+                const operacoesInsercao = [];
+                for (const element of resultadoAgrupado) {
+                    for (const produto of element.produtos) {
+                        const { id_produto, mes, ano, nu_quantidade, vr_total, compras_necessarias, estoque_necessario } = produto;
+                        const produtoInfo = yield app_1.db.get(`SELECT vr_preco_compra FROM tb_produto WHERE id_produto = ?`, id_produto);
+                        if (produtoInfo) {
                             const vr_total_compra = produtoInfo.vr_preco_compra * compras_necessarias;
                             const vr_total_estoque = vr_total - vr_total_compra;
-                            // Adicionar operações ao array
-                            operacoesInsercao.push(app_1.db.run(query_venda_insert, [mes, ano, id_produto, nu_quantidade, vr_total]), app_1.db.run(query_compra_insert, [mes, ano, id_produto, compras_necessarias, vr_total_compra]), app_1.db.run(query_estoque_insert, [mes, ano, id_produto, estoque_necessario, vr_total_estoque]));
-                            totalInsercoes += 3;
+                            operacoesInsercao.push(app_1.db.run(`INSERT OR REPLACE INTO tb_previsao_venda(mes, ano, id_produto, nu_quantidade, vr_total)
+                                 VALUES(?,?,?,?,?)`, [mes, ano, id_produto, nu_quantidade, vr_total]), app_1.db.run(`INSERT OR REPLACE INTO tb_previsao_compra(mes, ano, id_produto, nu_quantidade, vr_total)
+                                 VALUES(?,?,?,?,?)`, [mes, ano, id_produto, compras_necessarias, vr_total_compra]), app_1.db.run(`INSERT OR REPLACE INTO tb_previsao_estoque(mes, ano, id_produto, nu_quantidade, vr_total)
+                                 VALUES(?,?,?,?,?)`, [mes, ano, id_produto, estoque_necessario, vr_total_estoque]));
                         }
                     }
-                    // Executar todas as inserções em paralelo
-                    const resultados = yield Promise.all(operacoesInsercao);
-                    console.log(`✅ ${totalInsercoes} registros inseridos com sucesso`);
                 }
-                console.log('\n══════════════════════════════════════════════════');
+                yield Promise.all(operacoesInsercao);
+                yield app_1.db.run('COMMIT');
+                console.log(`✅ ${operacoesInsercao.length} registros inseridos/atualizados com sucesso`);
+                console.log('══════════════════════════════════════════════════');
                 console.log(' PROCESSO DE PREVISÃO CONCLUÍDO COM SUCESSO ');
                 console.log('══════════════════════════════════════════════════\n');
                 return {
@@ -402,12 +411,6 @@ class BI {
                 total_compras: previsoesMes.reduce((sum, p) => sum + p.compras_necessarias, 0)
             };
         });
-    }
-    static normalizar(val, min, max) {
-        return (val - min) / (max - min);
-    }
-    static desnormalizar(val, min, max) {
-        return val * (max - min) + min;
     }
 }
 exports.default = BI;

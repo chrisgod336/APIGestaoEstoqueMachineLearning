@@ -43,7 +43,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RedeNeural = RedeNeural;
-// 🧠 Versão com REDE NEURAL (MLP) via TensorFlow.js
 const tf = __importStar(require("@tensorflow/tfjs"));
 function RedeNeural(db) {
     return __awaiter(this, void 0, void 0, function* () {

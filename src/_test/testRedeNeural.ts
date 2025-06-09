@@ -1,4 +1,3 @@
-// 🧠 Versão com REDE NEURAL (MLP) via TensorFlow.js
 import * as tf from '@tensorflow/tfjs';
 
 export async function RedeNeural(db: any) {
